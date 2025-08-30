@@ -27,7 +27,9 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         src/serializers/msgpack.c
         include/wampproto/serializers/serializer.h
         include/wampproto/authenticators/authenticator.h
-        src/serializers/json.c)
+        src/serializers/json.c
+        include/wampproto/messages/challenge.h
+        include/wampproto/messages/authenticate.h)
 
 find_package(TinyCBOR CONFIG REQUIRED)
 target_link_libraries(wampproto PUBLIC tinycbor)
