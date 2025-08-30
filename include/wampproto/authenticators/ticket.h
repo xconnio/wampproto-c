@@ -1,0 +1,4 @@
+#ifndef WAMPPROTO_TICKET_H
+#define WAMPPROTO_TICKET_H
+
+#endif

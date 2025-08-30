@@ -1,0 +1,4 @@
+#ifndef WAMPPROTO_CRYPTOSIGN_H
+#define WAMPPROTO_CRYPTOSIGN_H
+
+#endif

@@ -37,12 +37,11 @@ Value *value_str(const char *s) {
     return v;
 }
 
-Value *value_list(size_t len) {
+Value *value_list(const size_t len) {
     Value *v = value_alloc(VALUE_LIST);
-    if (len > 0) {
-        v->list_val.items = calloc(len, sizeof(Value *));
-        v->list_val.len = len;
-    }
+    v->list_val.items = calloc(len, sizeof(Value *));
+    v->list_val.len = len;
+    v->list_val.len = 0; // <-- important!
     return v;
 }
 
@@ -122,7 +121,7 @@ int64_t value_as_int(const Value *v) {
         case VALUE_BOOL:
             return v->bool_val ? 1 : 0;
         case VALUE_FLOAT:
-            return (int64_t)v->float_val;
+            return (int64_t) v->float_val;
         case VALUE_STR:
             return atoll(v->str_val);
         default:

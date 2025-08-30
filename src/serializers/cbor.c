@@ -3,9 +3,10 @@
 
 #include <tinycbor/cbor.h>
 
-#include "wampproto/cbor_serializer.h"
+#include "wampproto/serializers.h"
 #include "wampproto/value.h"
 #include "wampproto/messages.h"
+#include "wampproto/messages/registered.h"
 
 typedef struct {
     Serializer base;

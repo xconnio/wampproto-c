@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "wampproto/messages.h"
+#include "wampproto/messages/registered.h"
 #include "wampproto/value.h"
+
 
 static int registered_type(const Message *self) {
     (void) self;
@@ -35,12 +36,10 @@ Registered *registered_new(const int64_t request_id, const int64_t registration_
 }
 
 Message *registered_parse(const Value *val) {
-    printf("adasdasd %d", val->type == 7);
     if (!val || val->type != VALUE_LIST || val->list_val.len < 3) return NULL;
 
     const int64_t request_id = value_as_int(val->list_val.items[1]);
     const int64_t registration_id = value_as_int(val->list_val.items[2]);
 
-    printf("PARD %ld %ld \n", request_id, registration_id);
     return (Message *) registered_new(request_id, registration_id);
 }

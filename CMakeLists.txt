@@ -9,12 +9,20 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         include/wampproto/messages.h
         include/wampproto/serializers.h
         include/wampproto/value.h
-        include/wampproto/cbor_serializer.h
 
-        src/cbor_serializer.c
+        src/serializers/cbor.c
         src/value.c
-        src/wampproto.c
-        src/messages/registered.c)
+        src/messages/registered.c
+        include/wampproto/messages/registered.h
+        include/wampproto/serializers/cbor.h
+        include/wampproto/serializers/msgpack.h
+        include/wampproto/serializers/json.h
+        include/wampproto/authenticators/ticket.h
+        include/wampproto/authenticators/cryptosign.h
+        include/wampproto/authenticators/wampcra.h
+        src/authenticators/cryptosign.c
+        src/authenticators/ticket.cpp
+        src/authenticators/wampcra.cpp)
 
 find_package(TinyCBOR CONFIG REQUIRED)
 target_link_libraries(wampproto PUBLIC tinycbor)

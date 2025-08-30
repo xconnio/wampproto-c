@@ -1,6 +1,4 @@
-#ifndef WAMPPROTO_LIBRARY_H
-#define WAMPPROTO_LIBRARY_H
+#ifndef WAMPPROTO_AUTHENTICATORS_H
+#define WAMPPROTO_AUTHENTICATORS_H
 
-void hello(void);
-
-#endif // WAMPPROTO_LIBRARY_H
+#endif

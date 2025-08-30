@@ -1,0 +1,4 @@
+#ifndef WAMPPROTO_WAMPCRA_H
+#define WAMPPROTO_WAMPCRA_H
+
+#endif

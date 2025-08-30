@@ -1,7 +1,0 @@
-#include "wampproto/wampproto.h"
-
-#include <stdio.h>
-
-void hello(void) {
-    printf("Hello, World!\n");
-}

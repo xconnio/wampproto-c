@@ -1,0 +1,4 @@
+#ifndef WAMPPROTO_MSGPACK_H
+#define WAMPPROTO_MSGPACK_H
+
+#endif
