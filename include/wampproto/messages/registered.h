@@ -2,6 +2,7 @@
 #define WAMPPROTO_REGISTERED_MESSAGE_H
 
 #include "wampproto/messages.h"
+#include "wampproto/value.h"
 
 typedef struct {
     Message base;

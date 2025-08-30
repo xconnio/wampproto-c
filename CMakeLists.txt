@@ -22,7 +22,11 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         include/wampproto/authenticators/wampcra.h
         src/authenticators/cryptosign.c
         src/authenticators/ticket.cpp
-        src/authenticators/wampcra.cpp)
+        src/authenticators/wampcra.cpp
+        include/wampproto/messages/message.h
+        src/serializers/msgpack.c
+        include/wampproto/serializers/serializer.h
+        include/wampproto/authenticators/authenticator.h)
 
 find_package(TinyCBOR CONFIG REQUIRED)
 target_link_libraries(wampproto PUBLIC tinycbor)

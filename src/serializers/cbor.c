@@ -6,7 +6,6 @@
 #include "wampproto/serializers.h"
 #include "wampproto/value.h"
 #include "wampproto/messages.h"
-#include "wampproto/messages/registered.h"
 
 typedef struct {
     Serializer base;
@@ -18,19 +17,23 @@ static Value *cbor_value_to_value(CborValue *it);
 static Value *cbor_value_to_value(CborValue *it) {
     if (cbor_value_is_null(it)) {
         return value_null();
-    } else if (cbor_value_is_boolean(it)) {
+    }
+    if (cbor_value_is_boolean(it)) {
         bool val;
         cbor_value_get_boolean(it, &val);
         return value_bool(val);
-    } else if (cbor_value_is_integer(it)) {
+    }
+    if (cbor_value_is_integer(it)) {
         int64_t val;
         cbor_value_get_int64(it, &val);
         return value_int(val);
-    } else if (cbor_value_is_double(it)) {
+    }
+    if (cbor_value_is_double(it)) {
         double val;
         cbor_value_get_double(it, &val);
         return value_float(val);
-    } else if (cbor_value_is_text_string(it)) {
+    }
+    if (cbor_value_is_text_string(it)) {
         size_t len;
         cbor_value_get_string_length(it, &len);
         char *str = malloc(len + 1);
@@ -39,7 +42,8 @@ static Value *cbor_value_to_value(CborValue *it) {
         Value *result = value_str(str);
         free(str);
         return result;
-    } else if (cbor_value_is_byte_string(it)) {
+    }
+    if (cbor_value_is_byte_string(it)) {
         size_t len;
         cbor_value_get_string_length(it, &len);
         uint8_t *bytes = malloc(len);
@@ -47,7 +51,8 @@ static Value *cbor_value_to_value(CborValue *it) {
         Value *result = value_bytes(bytes, len);
         free(bytes);
         return result;
-    } else if (cbor_value_is_array(it)) {
+    }
+    if (cbor_value_is_array(it)) {
         size_t len;
         cbor_value_get_array_length(it, &len);
 
@@ -65,7 +70,8 @@ static Value *cbor_value_to_value(CborValue *it) {
 
         cbor_value_leave_container(it, &arrayIt);
         return arr;
-    } else if (cbor_value_is_map(it)) {
+    }
+    if (cbor_value_is_map(it)) {
         Value *dict = value_dict();
         CborValue mapIt;
         cbor_value_enter_container(it, &mapIt);
