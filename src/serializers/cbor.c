@@ -3,37 +3,44 @@
 
 #include <tinycbor/cbor.h>
 
+#include "wampproto/messages.h"
 #include "wampproto/serializers.h"
 #include "wampproto/value.h"
-#include "wampproto/messages.h"
 
-typedef struct {
+typedef struct
+{
     Serializer base;
 } CborSerializer;
 
 // Forward declaration
 static Value *cbor_value_to_value(CborValue *it);
 
-static Value *cbor_value_to_value(CborValue *it) {
-    if (cbor_value_is_null(it)) {
+static Value *cbor_value_to_value(CborValue *it)
+{
+    if (cbor_value_is_null(it))
+    {
         return value_null();
     }
-    if (cbor_value_is_boolean(it)) {
+    if (cbor_value_is_boolean(it))
+    {
         bool val;
         cbor_value_get_boolean(it, &val);
         return value_bool(val);
     }
-    if (cbor_value_is_integer(it)) {
+    if (cbor_value_is_integer(it))
+    {
         int64_t val;
         cbor_value_get_int64(it, &val);
         return value_int(val);
     }
-    if (cbor_value_is_double(it)) {
+    if (cbor_value_is_double(it))
+    {
         double val;
         cbor_value_get_double(it, &val);
         return value_float(val);
     }
-    if (cbor_value_is_text_string(it)) {
+    if (cbor_value_is_text_string(it))
+    {
         size_t len;
         cbor_value_get_string_length(it, &len);
         char *str = malloc(len + 1);
@@ -43,7 +50,8 @@ static Value *cbor_value_to_value(CborValue *it) {
         free(str);
         return result;
     }
-    if (cbor_value_is_byte_string(it)) {
+    if (cbor_value_is_byte_string(it))
+    {
         size_t len;
         cbor_value_get_string_length(it, &len);
         uint8_t *bytes = malloc(len);
@@ -52,7 +60,8 @@ static Value *cbor_value_to_value(CborValue *it) {
         free(bytes);
         return result;
     }
-    if (cbor_value_is_array(it)) {
+    if (cbor_value_is_array(it))
+    {
         size_t len;
         cbor_value_get_array_length(it, &len);
 
@@ -60,9 +69,11 @@ static Value *cbor_value_to_value(CborValue *it) {
         CborValue arrayIt;
         cbor_value_enter_container(it, &arrayIt);
 
-        while (!cbor_value_at_end(&arrayIt)) {
+        while (!cbor_value_at_end(&arrayIt))
+        {
             Value *item = cbor_value_to_value(&arrayIt);
-            if (item) {
+            if (item)
+            {
                 value_list_append(arr, item);
             }
             cbor_value_advance(&arrayIt);
@@ -71,14 +82,17 @@ static Value *cbor_value_to_value(CborValue *it) {
         cbor_value_leave_container(it, &arrayIt);
         return arr;
     }
-    if (cbor_value_is_map(it)) {
+    if (cbor_value_is_map(it))
+    {
         Value *dict = value_dict();
         CborValue mapIt;
         cbor_value_enter_container(it, &mapIt);
 
-        while (!cbor_value_at_end(&mapIt)) {
+        while (!cbor_value_at_end(&mapIt))
+        {
             // Get key (assuming string key)
-            if (!cbor_value_is_text_string(&mapIt)) {
+            if (!cbor_value_is_text_string(&mapIt))
+            {
                 cbor_value_advance(&mapIt);
                 continue;
             }
@@ -92,9 +106,11 @@ static Value *cbor_value_to_value(CborValue *it) {
             cbor_value_advance(&mapIt);
 
             // Get value
-            if (!cbor_value_at_end(&mapIt)) {
+            if (!cbor_value_at_end(&mapIt))
+            {
                 Value *val = cbor_value_to_value(&mapIt);
-                if (val) {
+                if (val)
+                {
                     value_dict_set(dict, key, val);
                 }
                 cbor_value_advance(&mapIt);
@@ -112,8 +128,10 @@ static Value *cbor_value_to_value(CborValue *it) {
 
 CborError cbor_encode_value(CborEncoder *encoder, const Value *val);
 
-static Bytes encode_value_to_cbor(const Value *val) {
-    if (!val) {
+static Bytes encode_value_to_cbor(const Value *val)
+{
+    if (!val)
+    {
         Bytes out = {.data = NULL, .len = 0};
         return out;
     }
@@ -121,7 +139,8 @@ static Bytes encode_value_to_cbor(const Value *val) {
     // Estimate buffer size
     size_t buffer_size = 1024;
     uint8_t *buffer = malloc(buffer_size);
-    if (!buffer) {
+    if (!buffer)
+    {
         Bytes out = {.data = NULL, .len = 0};
         return out;
     }
@@ -130,7 +149,8 @@ static Bytes encode_value_to_cbor(const Value *val) {
     cbor_encoder_init(&encoder, buffer, buffer_size, 0);
 
     CborError err = cbor_encode_value(&encoder, val);
-    if (err != CborNoError) {
+    if (err != CborNoError)
+    {
         free(buffer);
         Bytes out = {.data = NULL, .len = 0};
         return out;
@@ -140,15 +160,14 @@ static Bytes encode_value_to_cbor(const Value *val) {
 
     buffer = realloc(buffer, actual_len);
 
-    Bytes out = {
-        .data = buffer,
-        .len = actual_len
-    };
+    Bytes out = {.data = buffer, .len = actual_len};
     return out;
 }
 
-static Value *decode_cbor_to_value(const uint8_t *data, size_t len) {
-    if (!data || len == 0) {
+static Value *decode_cbor_to_value(const uint8_t *data, size_t len)
+{
+    if (!data || len == 0)
+    {
         return NULL;
     }
 
@@ -156,23 +175,27 @@ static Value *decode_cbor_to_value(const uint8_t *data, size_t len) {
     CborValue it;
 
     CborError err = cbor_parser_init(data, len, 0, &parser, &it);
-    if (err != CborNoError) {
+    if (err != CborNoError)
+    {
         return NULL;
     }
 
     return cbor_value_to_value(&it);
 }
 
-static Bytes cbor_serialize(const Serializer *self, const Message *msg) {
-    (void) self;
+static Bytes cbor_serialize(const Serializer *self, const Message *msg)
+{
+    (void)self;
 
-    if (!msg) {
+    if (!msg)
+    {
         Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
     List *val = msg->marshal(msg);
-    if (!val) {
+    if (!val)
+    {
         Bytes out = {.data = NULL, .len = 0};
         return out;
     }
@@ -182,19 +205,23 @@ static Bytes cbor_serialize(const Serializer *self, const Message *msg) {
     return out;
 }
 
-static Message *cbor_deserialize(const Serializer *self, Bytes data) {
-    (void) self;
+static Message *cbor_deserialize(const Serializer *self, Bytes data)
+{
+    (void)self;
 
-    if (data.len == 0) {
+    if (data.len == 0)
+    {
         return NULL;
     }
 
     Value *val = decode_cbor_to_value(data.data, data.len);
-    if (!val) {
+    if (!val)
+    {
         return NULL;
     }
 
-    if (val->type != VALUE_LIST || val->list_val.len < 1) {
+    if (val->type != VALUE_LIST || val->list_val.len < 1)
+    {
         value_free(val);
         return NULL;
     }
@@ -202,7 +229,8 @@ static Message *cbor_deserialize(const Serializer *self, Bytes data) {
     int64_t code = value_as_int(val->list_val.items[0]);
 
     Message *msg = NULL;
-    if (code == 65) {
+    if (code == 65)
+    {
         msg = registered_parse(&val->list_val);
     }
 
@@ -210,73 +238,88 @@ static Message *cbor_deserialize(const Serializer *self, Bytes data) {
     return msg;
 }
 
-static void cbor_free(Serializer *self) {
+static void cbor_free(Serializer *self)
+{
     free(self);
 }
 
-Serializer *cbor_serializer_new(void) {
+Serializer *cbor_serializer_new(void)
+{
     CborSerializer *ser = calloc(1, sizeof(CborSerializer));
     ser->base.serialize = cbor_serialize;
     ser->base.deserialize = cbor_deserialize;
     ser->base.free = cbor_free;
-    return (Serializer *) ser;
+    return (Serializer *)ser;
 }
 
-CborError cbor_encode_value(CborEncoder *encoder, const Value *value) {
-    if (!value) {
+CborError cbor_encode_value(CborEncoder *encoder, const Value *value)
+{
+    if (!value)
+    {
         return cbor_encode_null(encoder);
     }
 
-    switch (value->type) {
-        case VALUE_NULL:
-            return cbor_encode_null(encoder);
+    switch (value->type)
+    {
+    case VALUE_NULL:
+        return cbor_encode_null(encoder);
 
-        case VALUE_INT:
-            return cbor_encode_int(encoder, value->int_val);
+    case VALUE_INT:
+        return cbor_encode_int(encoder, value->int_val);
 
-        case VALUE_FLOAT:
-            return cbor_encode_double(encoder, value->float_val);
+    case VALUE_FLOAT:
+        return cbor_encode_double(encoder, value->float_val);
 
-        case VALUE_BOOL:
-            return cbor_encode_boolean(encoder, value->bool_val);
+    case VALUE_BOOL:
+        return cbor_encode_boolean(encoder, value->bool_val);
 
-        case VALUE_STR:
-            return cbor_encode_text_string(encoder, value->str_val, strlen(value->str_val));
+    case VALUE_STR:
+        return cbor_encode_text_string(encoder, value->str_val, strlen(value->str_val));
 
-        case VALUE_BYTES:
-            return cbor_encode_byte_string(encoder, value->bytes_val.data, value->bytes_val.len);
+    case VALUE_BYTES:
+        return cbor_encode_byte_string(encoder, value->bytes_val.data, value->bytes_val.len);
 
-        case VALUE_LIST: {
-            CborEncoder list_encoder;
-            CborError err = cbor_encoder_create_array(encoder, &list_encoder, value->list_val.len);
-            if (err != CborNoError) return err;
+    case VALUE_LIST:
+    {
+        CborEncoder list_encoder;
+        CborError err = cbor_encoder_create_array(encoder, &list_encoder, value->list_val.len);
+        if (err != CborNoError)
+            return err;
 
-            for (size_t i = 0; i < value->list_val.len; ++i) {
-                err = cbor_encode_value(&list_encoder, value->list_val.items[i]);
-                if (err != CborNoError) return err;
-            }
-
-            return cbor_encoder_close_container(encoder, &list_encoder);
+        for (size_t i = 0; i < value->list_val.len; ++i)
+        {
+            err = cbor_encode_value(&list_encoder, value->list_val.items[i]);
+            if (err != CborNoError)
+                return err;
         }
 
-        case VALUE_DICT: {
-            size_t count = 0;
-            for (Dict *d = value->dict_val; d; d = d->next) count++;
+        return cbor_encoder_close_container(encoder, &list_encoder);
+    }
 
-            CborEncoder mapEncoder;
-            CborError err = cbor_encoder_create_map(encoder, &mapEncoder, count);
-            if (err != CborNoError) return err;
+    case VALUE_DICT:
+    {
+        size_t count = 0;
+        for (Dict *d = value->dict_val; d; d = d->next)
+            count++;
 
-            for (Dict *d = value->dict_val; d; d = d->next) {
-                err = cbor_encode_text_string(&mapEncoder, d->key, strlen(d->key));
-                if (err != CborNoError) return err;
-                err = cbor_encode_value(&mapEncoder, d->value);
-                if (err != CborNoError) return err;
-            }
-            return cbor_encoder_close_container(encoder, &mapEncoder);
+        CborEncoder mapEncoder;
+        CborError err = cbor_encoder_create_map(encoder, &mapEncoder, count);
+        if (err != CborNoError)
+            return err;
+
+        for (Dict *d = value->dict_val; d; d = d->next)
+        {
+            err = cbor_encode_text_string(&mapEncoder, d->key, strlen(d->key));
+            if (err != CborNoError)
+                return err;
+            err = cbor_encode_value(&mapEncoder, d->value);
+            if (err != CborNoError)
+                return err;
         }
+        return cbor_encoder_close_container(encoder, &mapEncoder);
+    }
 
-        default:
-            return CborErrorUnknownType;
+    default:
+        return CborErrorUnknownType;
     }
 }

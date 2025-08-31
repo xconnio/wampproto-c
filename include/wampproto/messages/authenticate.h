@@ -4,7 +4,8 @@
 #include "wampproto/messages.h"
 #include "wampproto/value.h"
 
-typedef struct {
+typedef struct
+{
     Message base;
     char *signature;
     Dict auth_extra;

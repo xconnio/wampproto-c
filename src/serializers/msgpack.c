@@ -1,186 +1,223 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include <msgpack.h>
 
+#include "wampproto/messages.h"
 #include "wampproto/serializers.h"
 #include "wampproto/value.h"
-#include "wampproto/messages.h"
 
-typedef struct {
+typedef struct
+{
     Serializer base;
 } MsgpackSerializer;
 
 static Value *msgpack_object_to_value(const msgpack_object *obj);
 
-static Value *msgpack_object_to_value(const msgpack_object *obj) {
-    switch (obj->type) {
-        case MSGPACK_OBJECT_NIL:
-            return value_null();
+static Value *msgpack_object_to_value(const msgpack_object *obj)
+{
+    switch (obj->type)
+    {
+    case MSGPACK_OBJECT_NIL:
+        return value_null();
 
-        case MSGPACK_OBJECT_BOOLEAN:
-            return value_bool(obj->via.boolean);
+    case MSGPACK_OBJECT_BOOLEAN:
+        return value_bool(obj->via.boolean);
 
-        case MSGPACK_OBJECT_POSITIVE_INTEGER: {
-            int64_t v = (int64_t)obj->via.u64;
-            return value_int(v);
-        }
+    case MSGPACK_OBJECT_POSITIVE_INTEGER:
+    {
+        int64_t v = (int64_t)obj->via.u64;
+        return value_int(v);
+    }
 
-        case MSGPACK_OBJECT_NEGATIVE_INTEGER: {
-            int64_t v = (int64_t)obj->via.i64;
-            return value_int(v);
-        }
+    case MSGPACK_OBJECT_NEGATIVE_INTEGER:
+    {
+        int64_t v = (int64_t)obj->via.i64;
+        return value_int(v);
+    }
 
-        case MSGPACK_OBJECT_FLOAT32:
-        case MSGPACK_OBJECT_FLOAT64:
-            return value_float(obj->via.f64);
+    case MSGPACK_OBJECT_FLOAT32:
+    case MSGPACK_OBJECT_FLOAT64:
+        return value_float(obj->via.f64);
 
-        case MSGPACK_OBJECT_STR: {
-            // Not null-terminated from msgpack; copy and NUL-terminate.
-            size_t len = obj->via.str.size;
-            const char *src = obj->via.str.ptr;
-            char *s = (char *)malloc(len + 1);
-            if (!s) return NULL;
-            memcpy(s, src, len);
-            s[len] = '\0';
-            Value *v = value_str(s);
-            free(s);
-            return v;
-        }
-
-        case MSGPACK_OBJECT_BIN: {
-            size_t len = obj->via.bin.size;
-            const char *src = obj->via.bin.ptr;
-            uint8_t *buf = (uint8_t *)malloc(len);
-            if (!buf) return NULL;
-            memcpy(buf, src, len);
-            Value *v = value_bytes(buf, len);
-            free(buf);
-            return v;
-        }
-
-        case MSGPACK_OBJECT_ARRAY: {
-            size_t n = obj->via.array.size;
-            Value *arr = value_list(0);               // capacity-style constructor is safer
-            for (size_t i = 0; i < n; ++i) {
-                Value *elem = msgpack_object_to_value(&obj->via.array.ptr[i]);
-                if (!elem) elem = value_null();
-                value_list_append(arr, elem);
-            }
-            return arr;
-        }
-
-        case MSGPACK_OBJECT_MAP: {
-            Value *dict = value_dict();
-            size_t n = obj->via.map.size;
-            for (size_t i = 0; i < n; ++i) {
-                const msgpack_object_kv *kv = &obj->via.map.ptr[i];
-                // We’ll follow your CBOR implementation: only accept string keys
-                if (kv->key.type != MSGPACK_OBJECT_STR) {
-                    continue;
-                }
-                size_t klen = kv->key.via.str.size;
-                const char *kptr = kv->key.via.str.ptr;
-                char *key = (char *)malloc(klen + 1);
-                if (!key) continue;
-                memcpy(key, kptr, klen);
-                key[klen] = '\0';
-
-                Value *v = msgpack_object_to_value(&kv->val);
-                if (!v) v = value_null();
-                value_dict_set(dict, key, v);
-                free(key);
-            }
-            return dict;
-        }
-
-        // You can add EXT handling here if you use it.
-        case MSGPACK_OBJECT_EXT:
-        default:
+    case MSGPACK_OBJECT_STR:
+    {
+        // Not null-terminated from msgpack; copy and NUL-terminate.
+        size_t len = obj->via.str.size;
+        const char *src = obj->via.str.ptr;
+        char *s = (char *)malloc(len + 1);
+        if (!s)
             return NULL;
+        memcpy(s, src, len);
+        s[len] = '\0';
+        Value *v = value_str(s);
+        free(s);
+        return v;
+    }
+
+    case MSGPACK_OBJECT_BIN:
+    {
+        size_t len = obj->via.bin.size;
+        const char *src = obj->via.bin.ptr;
+        uint8_t *buf = (uint8_t *)malloc(len);
+        if (!buf)
+            return NULL;
+        memcpy(buf, src, len);
+        Value *v = value_bytes(buf, len);
+        free(buf);
+        return v;
+    }
+
+    case MSGPACK_OBJECT_ARRAY:
+    {
+        size_t n = obj->via.array.size;
+        Value *arr = value_list(0); // capacity-style constructor is safer
+        for (size_t i = 0; i < n; ++i)
+        {
+            Value *elem = msgpack_object_to_value(&obj->via.array.ptr[i]);
+            if (!elem)
+                elem = value_null();
+            value_list_append(arr, elem);
+        }
+        return arr;
+    }
+
+    case MSGPACK_OBJECT_MAP:
+    {
+        Value *dict = value_dict();
+        size_t n = obj->via.map.size;
+        for (size_t i = 0; i < n; ++i)
+        {
+            const msgpack_object_kv *kv = &obj->via.map.ptr[i];
+            // We’ll follow your CBOR implementation: only accept string keys
+            if (kv->key.type != MSGPACK_OBJECT_STR)
+            {
+                continue;
+            }
+            size_t klen = kv->key.via.str.size;
+            const char *kptr = kv->key.via.str.ptr;
+            char *key = (char *)malloc(klen + 1);
+            if (!key)
+                continue;
+            memcpy(key, kptr, klen);
+            key[klen] = '\0';
+
+            Value *v = msgpack_object_to_value(&kv->val);
+            if (!v)
+                v = value_null();
+            value_dict_set(dict, key, v);
+            free(key);
+        }
+        return dict;
+    }
+
+    // You can add EXT handling here if you use it.
+    case MSGPACK_OBJECT_EXT:
+    default:
+        return NULL;
     }
 }
 
 static int value_to_msgpack(msgpack_packer *pk, const Value *value);
 
-static int value_to_msgpack(msgpack_packer *pk, const Value *value) {
-    if (!value) {
+static int value_to_msgpack(msgpack_packer *pk, const Value *value)
+{
+    if (!value)
+    {
         return msgpack_pack_nil(pk);
     }
 
-    switch (value->type) {
-        case VALUE_NULL:
-            return msgpack_pack_nil(pk);
+    switch (value->type)
+    {
+    case VALUE_NULL:
+        return msgpack_pack_nil(pk);
 
-        case VALUE_BOOL:
-            return value->bool_val ? msgpack_pack_true(pk) : msgpack_pack_false(pk);
+    case VALUE_BOOL:
+        return value->bool_val ? msgpack_pack_true(pk) : msgpack_pack_false(pk);
 
-        case VALUE_INT:
-            // msgpack_c chooses signed/unsigned automatically from function used.
-            // We send as int64 to preserve negatives.
-            return msgpack_pack_int64(pk, value->int_val);
+    case VALUE_INT:
+        // msgpack_c chooses signed/unsigned automatically from function used.
+        // We send as int64 to preserve negatives.
+        return msgpack_pack_int64(pk, value->int_val);
 
-        case VALUE_FLOAT:
-            // msgpack-c will encode as float64 via msgpack_pack_double
-            return msgpack_pack_double(pk, value->float_val);
+    case VALUE_FLOAT:
+        // msgpack-c will encode as float64 via msgpack_pack_double
+        return msgpack_pack_double(pk, value->float_val);
 
-        case VALUE_STR: {
-            size_t len = strlen(value->str_val);
-            int rc = msgpack_pack_str(pk, (uint32_t)len);
-            if (rc != 0) return rc;
-            return msgpack_pack_str_body(pk, value->str_val, len);
+    case VALUE_STR:
+    {
+        size_t len = strlen(value->str_val);
+        int rc = msgpack_pack_str(pk, (uint32_t)len);
+        if (rc != 0)
+            return rc;
+        return msgpack_pack_str_body(pk, value->str_val, len);
+    }
+
+    case VALUE_BYTES:
+    {
+        size_t len = value->bytes_val.len;
+        int rc = msgpack_pack_bin(pk, (uint32_t)len);
+        if (rc != 0)
+            return rc;
+        return msgpack_pack_bin_body(pk, (const char *)value->bytes_val.data, len);
+    }
+
+    case VALUE_LIST:
+    {
+        size_t n = value->list_val.len;
+        int rc = msgpack_pack_array(pk, (uint32_t)n);
+        if (rc != 0)
+            return rc;
+        for (size_t i = 0; i < n; ++i)
+        {
+            rc = value_to_msgpack(pk, value->list_val.items[i]);
+            if (rc != 0)
+                return rc;
         }
+        return 0;
+    }
 
-        case VALUE_BYTES: {
-            size_t len = value->bytes_val.len;
-            int rc = msgpack_pack_bin(pk, (uint32_t)len);
-            if (rc != 0) return rc;
-            return msgpack_pack_bin_body(pk, (const char *)value->bytes_val.data, len);
+    case VALUE_DICT:
+    {
+        // Count entries in your linked list Dict*
+        size_t count = 0;
+        for (Dict *d = value->dict_val; d; d = d->next)
+            count++;
+
+        int rc = msgpack_pack_map(pk, (uint32_t)count);
+        if (rc != 0)
+            return rc;
+        for (Dict *d = value->dict_val; d; d = d->next)
+        {
+            // key (string)
+            size_t klen = strlen(d->key);
+            rc = msgpack_pack_str(pk, (uint32_t)klen);
+            if (rc != 0)
+                return rc;
+            rc = msgpack_pack_str_body(pk, d->key, klen);
+            if (rc != 0)
+                return rc;
+
+            // value (any)
+            rc = value_to_msgpack(pk, d->value);
+            if (rc != 0)
+                return rc;
         }
+        return 0;
+    }
 
-        case VALUE_LIST: {
-            size_t n = value->list_val.len;
-            int rc = msgpack_pack_array(pk, (uint32_t)n);
-            if (rc != 0) return rc;
-            for (size_t i = 0; i < n; ++i) {
-                rc = value_to_msgpack(pk, value->list_val.items[i]);
-                if (rc != 0) return rc;
-            }
-            return 0;
-        }
-
-        case VALUE_DICT: {
-            // Count entries in your linked list Dict*
-            size_t count = 0;
-            for (Dict *d = value->dict_val; d; d = d->next) count++;
-
-            int rc = msgpack_pack_map(pk, (uint32_t)count);
-            if (rc != 0) return rc;
-            for (Dict *d = value->dict_val; d; d = d->next) {
-                // key (string)
-                size_t klen = strlen(d->key);
-                rc = msgpack_pack_str(pk, (uint32_t)klen);
-                if (rc != 0) return rc;
-                rc = msgpack_pack_str_body(pk, d->key, klen);
-                if (rc != 0) return rc;
-
-                // value (any)
-                rc = value_to_msgpack(pk, d->value);
-                if (rc != 0) return rc;
-            }
-            return 0;
-        }
-
-        default:
-            // Unknown type — you might want a specific error policy here
-            return -1;
+    default:
+        // Unknown type — you might want a specific error policy here
+        return -1;
     }
 }
 
-static Bytes encode_value_to_msgpack(const Value *val) {
+static Bytes encode_value_to_msgpack(const Value *val)
+{
     Bytes out = {.data = NULL, .len = 0};
-    if (!val) return out;
+    if (!val)
+        return out;
 
     msgpack_sbuffer sbuf;
     msgpack_sbuffer_init(&sbuf);
@@ -188,14 +225,16 @@ static Bytes encode_value_to_msgpack(const Value *val) {
     msgpack_packer pk;
     msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-    if (value_to_msgpack(&pk, val) != 0) {
+    if (value_to_msgpack(&pk, val) != 0)
+    {
         msgpack_sbuffer_destroy(&sbuf);
         return out;
     }
 
     // Copy out to a heap buffer we own
     uint8_t *buf = (uint8_t *)malloc(sbuf.size);
-    if (!buf) {
+    if (!buf)
+    {
         msgpack_sbuffer_destroy(&sbuf);
         return out;
     }
@@ -207,15 +246,18 @@ static Bytes encode_value_to_msgpack(const Value *val) {
     return out;
 }
 
-static Value *decode_msgpack_to_value(const uint8_t *data, size_t len) {
-    if (!data || len == 0) return NULL;
+static Value *decode_msgpack_to_value(const uint8_t *data, size_t len)
+{
+    if (!data || len == 0)
+        return NULL;
 
     size_t off = 0;
     msgpack_unpacked result;
     msgpack_unpacked_init(&result);
 
     bool ok = msgpack_unpack_next(&result, (const char *)data, len, &off);
-    if (!ok) {
+    if (!ok)
+    {
         msgpack_unpacked_destroy(&result);
         return NULL;
     }
@@ -225,27 +267,34 @@ static Value *decode_msgpack_to_value(const uint8_t *data, size_t len) {
     return v;
 }
 
-static Bytes msgpack_serialize(const Serializer *self, const Message *msg) {
-    (void) self;
+static Bytes msgpack_serialize(const Serializer *self, const Message *msg)
+{
+    (void)self;
     Bytes out = {.data = NULL, .len = 0};
-    if (!msg) return out;
+    if (!msg)
+        return out;
 
     Value *val = msg->marshal(msg);
-    if (!val) return out;
+    if (!val)
+        return out;
 
     out = encode_value_to_msgpack(val);
     value_free(val);
     return out;
 }
 
-static Message *msgpack_deserialize(const Serializer *self, Bytes data) {
-    (void) self;
-    if (data.len == 0) return NULL;
+static Message *msgpack_deserialize(const Serializer *self, Bytes data)
+{
+    (void)self;
+    if (data.len == 0)
+        return NULL;
 
     Value *val = decode_msgpack_to_value(data.data, data.len);
-    if (!val) return NULL;
+    if (!val)
+        return NULL;
 
-    if (val->type != VALUE_LIST || val->list_val.len < 1) {
+    if (val->type != VALUE_LIST || val->list_val.len < 1)
+    {
         value_free(val);
         return NULL;
     }
@@ -253,7 +302,8 @@ static Message *msgpack_deserialize(const Serializer *self, Bytes data) {
     const int64_t code = value_as_int(val->list_val.items[0]);
 
     Message *msg = NULL;
-    if (code == 65) {
+    if (code == 65)
+    {
         msg = registered_parse(&val->list_val);
     }
 
@@ -261,14 +311,16 @@ static Message *msgpack_deserialize(const Serializer *self, Bytes data) {
     return msg;
 }
 
-static void msgpack_free(Serializer *self) {
+static void msgpack_free(Serializer *self)
+{
     free(self);
 }
 
-Serializer *msgpack_serializer_new(void) {
+Serializer *msgpack_serializer_new(void)
+{
     MsgpackSerializer *ser = calloc(1, sizeof(MsgpackSerializer));
-    ser->base.serialize   = msgpack_serialize;
+    ser->base.serialize = msgpack_serialize;
     ser->base.deserialize = msgpack_deserialize;
-    ser->base.free        = msgpack_free;
+    ser->base.free = msgpack_free;
     return (Serializer *)ser;
 }

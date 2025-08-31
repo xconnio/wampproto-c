@@ -5,7 +5,8 @@
 
 typedef struct Message Message;
 
-struct Message {
+struct Message
+{
     int (*message_type)(const Message *self);
 
     List *(*marshal)(const Message *self);

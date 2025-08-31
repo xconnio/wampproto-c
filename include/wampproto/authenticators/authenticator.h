@@ -1,13 +1,14 @@
 #ifndef WAMPPROTO_AUTHENTICATOR_H
 #define WAMPPROTO_AUTHENTICATOR_H
 
-#include "wampproto/value.h"
-#include "wampproto/messages/challenge.h"
 #include "wampproto/messages/authenticate.h"
+#include "wampproto/messages/challenge.h"
+#include "wampproto/value.h"
 
 typedef struct ClientAuthenticator ClientAuthenticator;
 
-struct ClientAuthenticator {
+struct ClientAuthenticator
+{
     const char *(*auth_method)(const ClientAuthenticator *self);
     const char *(*auth_id)(const ClientAuthenticator *self);
     Dict *(*auth_extra)(const ClientAuthenticator *self);

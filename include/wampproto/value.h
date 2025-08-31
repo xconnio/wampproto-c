@@ -1,13 +1,14 @@
 #ifndef WAMPPROTO_VALUE_H
 #define WAMPPROTO_VALUE_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct Value;
 struct Dict;
 
-typedef enum {
+typedef enum
+{
     VALUE_NULL,
     VALUE_INT,
     VALUE_FLOAT,
@@ -18,32 +19,37 @@ typedef enum {
     VALUE_BYTES,
 } ValueType;
 
-typedef struct Dict {
+typedef struct Dict
+{
     char *key;
     struct Value *value;
     struct Dict *next;
 } Dict;
 
-typedef struct {
+typedef struct
+{
     struct Value **items;
     size_t len;
 } List;
 
-typedef struct {
+typedef struct
+{
     uint8_t *data;
     size_t len;
 } Bytes;
 
-typedef struct Value {
+typedef struct Value
+{
     ValueType type;
-    union {
-        int64_t     int_val;
-        double      float_val;
-        int         bool_val;
-        char        *str_val;
-        List        list_val;
-        Dict        *dict_val;
-        Bytes       bytes_val;
+    union
+    {
+        int64_t int_val;
+        double float_val;
+        int bool_val;
+        char *str_val;
+        List list_val;
+        Dict *dict_val;
+        Bytes bytes_val;
     };
 } Value;
 
@@ -64,11 +70,11 @@ int value_dict_set(Value *dict, const char *key, Value *val);
 int value_list_append(Value *list, Value *val);
 int value_dict_append(Value *dict, const char *key, Value *val);
 
-#define VALUE_FROM_INT(n)    value_int((n))
-#define VALUE_FROM_FLOAT(x)  value_float((x))
-#define VALUE_FROM_BOOL(b)   value_bool((b))
-#define VALUE_FROM_STR(s)    value_str((s))
-#define VALUE_FROM_BYTES(d,l) value_bytes((d),(l))
+#define VALUE_FROM_INT(n) value_int((n))
+#define VALUE_FROM_FLOAT(x) value_float((x))
+#define VALUE_FROM_BOOL(b) value_bool((b))
+#define VALUE_FROM_STR(s) value_str((s))
+#define VALUE_FROM_BYTES(d, l) value_bytes((d), (l))
 
 void value_free(Value *v);
 

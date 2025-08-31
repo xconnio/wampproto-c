@@ -4,7 +4,8 @@
 #include "wampproto/messages.h"
 #include "wampproto/value.h"
 
-typedef struct {
+typedef struct
+{
     Message base;
     int64_t request_id;
     int64_t registration_id;
