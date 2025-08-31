@@ -1,7 +1,7 @@
 #ifndef WAMPPROTO_REGISTERED_MESSAGE_H
 #define WAMPPROTO_REGISTERED_MESSAGE_H
 
-#include "wampproto/messages.h"
+#include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
 typedef struct

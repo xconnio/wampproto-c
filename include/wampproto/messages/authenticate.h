@@ -1,7 +1,7 @@
 #ifndef WAMPPROTO_AUTHENTICATE_H
 #define WAMPPROTO_AUTHENTICATE_H
 
-#include "wampproto/messages.h"
+#include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
 typedef struct

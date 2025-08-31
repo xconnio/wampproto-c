@@ -1,7 +1,5 @@
 #ifndef WAMPPROTO_SERIALIZER_H
 #define WAMPPROTO_SERIALIZER_H
-#include <stddef.h>
-#include <stdint.h>
 
 #include "wampproto/messages/message.h"
 
