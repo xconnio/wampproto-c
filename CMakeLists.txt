@@ -28,6 +28,14 @@ find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 if(CLANG_TIDY_EXE)
     message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
     set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_EXE};-checks=*,-clang-analyzer-alpha.*")
+
+    add_custom_target(lint
+            COMMAND ${CLANG_TIDY_EXE}
+            -p ${CMAKE_BINARY_DIR}
+            ${ALL_SOURCE_FILES}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Running clang-tidy on source files"
+    )
 endif()
 
 
@@ -66,6 +74,7 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
 
         # Core
         src/value.c
+        src/serializers/helpers.c
 )
 
 target_link_libraries(wampproto PUBLIC tinycbor cjson msgpackc)
@@ -78,6 +87,9 @@ target_include_directories(wampproto PUBLIC
 # Test runner / entrypoint
 option(BUILD_TESTS "Build test runner" ON)
 if(BUILD_TESTS)
+    enable_testing()
     add_executable(wampproto_test tests/main.c)
     target_link_libraries(wampproto_test PRIVATE wampproto)
+
+    add_test(NAME wampproto_test COMMAND wampproto_test)
 endif()

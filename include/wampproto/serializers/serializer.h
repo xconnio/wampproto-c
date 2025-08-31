@@ -12,4 +12,6 @@ struct Serializer
     void (*free)(Serializer *self);
 };
 
+Message *(to_message)(const List *data);
+
 #endif

@@ -226,13 +226,7 @@ static Message *cbor_deserialize(const Serializer *self, Bytes data)
         return NULL;
     }
 
-    int64_t code = value_as_int(val->list_val.items[0]);
-
-    Message *msg = NULL;
-    if (code == 65)
-    {
-        msg = registered_parse(&val->list_val);
-    }
+    Message *msg = to_message(&val->list_val);
 
     value_free(val);
     return msg;
