@@ -48,9 +48,11 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
 
         # Authenticators
         include/wampproto/authenticators/authenticator.h
+        include/wampproto/authenticators/anonymous.h
         include/wampproto/authenticators/cryptosign.h
         include/wampproto/authenticators/ticket.h
         include/wampproto/authenticators/wampcra.h
+        src/authenticators/anonymous.c
         src/authenticators/cryptosign.c
         src/authenticators/ticket.c
         src/authenticators/wampcra.c

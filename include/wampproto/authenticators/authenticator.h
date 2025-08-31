@@ -9,9 +9,11 @@ typedef struct ClientAuthenticator ClientAuthenticator;
 
 struct ClientAuthenticator
 {
-    const char *(*auth_method)(const ClientAuthenticator *self);
-    const char *(*auth_id)(const ClientAuthenticator *self);
-    Dict *(*auth_extra)(const ClientAuthenticator *self);
+    const char *auth_id;
+    const char *auth_method;
+    Dict *auth_extra;
+
+    const char *auth_data;
 
     Authenticate *(*authenticate)(const ClientAuthenticator *self, const Challenge *challenge);
 
