@@ -1,10 +1,10 @@
-CMAKE_DIR := build
+CMAKE_DIR := cmake-build-debug
 
 .PHONY: lint format test build
 
 build:
 	cmake -S . -B $(CMAKE_DIR) -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-	cmake --build $(CMAKE_DIR)
+	cmake --build $(CMAKE_DIR) -j $(nproc)
 
 format:
 	cmake --build $(CMAKE_DIR) --target format
