@@ -32,7 +32,7 @@ const void *check_serializer(const Serializer *serializer, const Message *msg)
 
     const Registered *r = (Registered *)deserialized;
     assert(r != NULL);
-    assert(r->base.message_type(deserialized) == 65);
+    assert(r->base.message_type == 65);
 
     return NULL;
 }

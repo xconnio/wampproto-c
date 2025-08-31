@@ -155,6 +155,13 @@ int64_t value_as_int(const Value *v)
     }
 }
 
+Value *value_from_dict(Dict *dict)
+{
+    Value *v = value_alloc(VALUE_DICT);
+    v->dict_val = dict;
+    return v;
+}
+
 void value_free(Value *v)
 {
     if (!v)

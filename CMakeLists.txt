@@ -76,6 +76,8 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         # Core
         src/value.c
         src/serializers/helpers.c
+        include/wampproto/messages/call.h
+        src/messages/call.c
 )
 
 # Add TinyCBOR install path

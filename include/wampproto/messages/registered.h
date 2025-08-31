@@ -4,6 +4,8 @@
 #include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
+#define MESSAGE_TYPE_REGISTERED 65
+
 typedef struct
 {
     Message base;

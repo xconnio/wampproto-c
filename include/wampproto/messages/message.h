@@ -8,7 +8,7 @@ typedef struct Message Message;
 
 struct Message
 {
-    int (*message_type)(const Message *self);
+    int message_type;
 
     List *(*marshal)(const Message *self);
 

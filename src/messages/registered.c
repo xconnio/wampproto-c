@@ -4,17 +4,11 @@
 #include "wampproto/messages/registered.h"
 #include "wampproto/value.h"
 
-static int registered_type(const Message *self)
-{
-    (void)self;
-    return 65;
-}
-
 static List *registered_marshal(const Message *self)
 {
     const Registered *r = (const Registered *)self;
     Value *v = value_list(3);
-    value_list_append(v, value_int(65));
+    value_list_append(v, value_int(MESSAGE_TYPE_REGISTERED));
     value_list_append(v, value_int(r->request_id));
     value_list_append(v, value_int(r->registration_id));
     return (List *)v;
@@ -28,7 +22,7 @@ static void registered_free(Message *self)
 Registered *registered_new(const int64_t request_id, const int64_t registration_id)
 {
     Registered *r = calloc(1, sizeof(Registered));
-    r->base.message_type = registered_type;
+    r->base.message_type = MESSAGE_TYPE_REGISTERED;
     r->base.marshal = registered_marshal;
     r->base.free = registered_free;
     r->base.parse = registered_parse;
