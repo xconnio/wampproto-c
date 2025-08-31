@@ -10,13 +10,13 @@ static int registered_type(const Message *self) {
     return 65;
 }
 
-static Value *registered_marshal(const Message *self) {
+static List *registered_marshal(const Message *self) {
     const Registered *r = (const Registered *) self;
     Value *v = value_list(3);
     value_list_append(v, value_int(65));
     value_list_append(v, value_int(r->request_id));
     value_list_append(v, value_int(r->registration_id));
-    return v;
+    return (List*) v;
 }
 
 static void registered_free(Message *self) {
@@ -35,11 +35,11 @@ Registered *registered_new(const int64_t request_id, const int64_t registration_
     return r;
 }
 
-Message *registered_parse(const Value *val) {
-    if (!val || val->type != VALUE_LIST || val->list_val.len < 3) return NULL;
+Message *registered_parse(const List *val) {
+    if (!val || val->len < 3) return NULL;
 
-    const int64_t request_id = value_as_int(val->list_val.items[1]);
-    const int64_t registration_id = value_as_int(val->list_val.items[2]);
+    const int64_t request_id = value_as_int(val->items[1]);
+    const int64_t registration_id = value_as_int(val->items[2]);
 
     return (Message *) registered_new(request_id, registration_id);
 }

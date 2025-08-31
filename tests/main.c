@@ -20,9 +20,9 @@ void test_cbor(void) {
     const Registered *registered = registered_new(1, 2);
     const Message *msg = (Message *) registered;
 
-    const ByteArray arr = serializer->serialize(serializer, msg);
+    const Bytes arr = serializer->serialize(serializer, msg);
 
-    const Message *deserialized = serializer->deserialize(serializer, arr.data, arr.len);
+    const Message *deserialized = serializer->deserialize(serializer, arr);
     assert(deserialized != NULL);
 
     const Registered *r = (Registered *) deserialized;
@@ -31,13 +31,13 @@ void test_cbor(void) {
 }
 
 void test_msgpack(void) {
-    const Serializer *serializer = cbor_serializer_new();
+    const Serializer *serializer = msgpack_serializer_new();
     const Registered *registered = registered_new(1, 2);
     const Message *msg = (Message *) registered;
 
-    const ByteArray arr = serializer->serialize(serializer, msg);
+    const Bytes arr = serializer->serialize(serializer, msg);
 
-    const Message *deserialized = serializer->deserialize(serializer, arr.data, arr.len);
+    const Message *deserialized = serializer->deserialize(serializer, arr);
     assert(deserialized != NULL);
 
     const Registered *r = (Registered *) deserialized;
@@ -46,13 +46,13 @@ void test_msgpack(void) {
 }
 
 void test_json(void) {
-    const Serializer *serializer = cbor_serializer_new();
+    const Serializer *serializer = json_serializer_new();
     const Registered *registered = registered_new(1, 2);
     const Message *msg = (Message *) registered;
 
-    const ByteArray arr = serializer->serialize(serializer, msg);
+    const Bytes arr = serializer->serialize(serializer, msg);
 
-    const Message *deserialized = serializer->deserialize(serializer, arr.data, arr.len);
+    const Message *deserialized = serializer->deserialize(serializer, arr);
     assert(deserialized != NULL);
 
     const Registered *r = (Registered *) deserialized;

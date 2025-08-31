@@ -21,8 +21,8 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         include/wampproto/authenticators/cryptosign.h
         include/wampproto/authenticators/wampcra.h
         src/authenticators/cryptosign.c
-        src/authenticators/ticket.cpp
-        src/authenticators/wampcra.cpp
+        src/authenticators/ticket.c
+        src/authenticators/wampcra.c
         include/wampproto/messages/message.h
         src/serializers/msgpack.c
         include/wampproto/serializers/serializer.h
@@ -31,8 +31,7 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         include/wampproto/messages/challenge.h
         include/wampproto/messages/authenticate.h)
 
-find_package(TinyCBOR CONFIG REQUIRED)
-target_link_libraries(wampproto PUBLIC tinycbor)
+target_link_libraries(wampproto PUBLIC tinycbor cjson msgpackc)
 
 
 # Public include dir (installed, exported)

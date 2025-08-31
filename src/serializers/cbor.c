@@ -112,9 +112,9 @@ static Value *cbor_value_to_value(CborValue *it) {
 
 CborError cbor_encode_value(CborEncoder *encoder, const Value *val);
 
-static ByteArray encode_value_to_cbor(const Value *val) {
+static Bytes encode_value_to_cbor(const Value *val) {
     if (!val) {
-        ByteArray out = {.data = NULL, .len = 0};
+        Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
@@ -122,7 +122,7 @@ static ByteArray encode_value_to_cbor(const Value *val) {
     size_t buffer_size = 1024;
     uint8_t *buffer = malloc(buffer_size);
     if (!buffer) {
-        ByteArray out = {.data = NULL, .len = 0};
+        Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
@@ -132,7 +132,7 @@ static ByteArray encode_value_to_cbor(const Value *val) {
     CborError err = cbor_encode_value(&encoder, val);
     if (err != CborNoError) {
         free(buffer);
-        ByteArray out = {.data = NULL, .len = 0};
+        Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
@@ -140,7 +140,7 @@ static ByteArray encode_value_to_cbor(const Value *val) {
 
     buffer = realloc(buffer, actual_len);
 
-    ByteArray out = {
+    Bytes out = {
         .data = buffer,
         .len = actual_len
     };
@@ -163,33 +163,33 @@ static Value *decode_cbor_to_value(const uint8_t *data, size_t len) {
     return cbor_value_to_value(&it);
 }
 
-static ByteArray cbor_serialize(const Serializer *self, const Message *msg) {
+static Bytes cbor_serialize(const Serializer *self, const Message *msg) {
     (void) self;
 
     if (!msg) {
-        ByteArray out = {.data = NULL, .len = 0};
+        Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
-    Value *val = msg->marshal(msg);
+    List *val = msg->marshal(msg);
     if (!val) {
-        ByteArray out = {.data = NULL, .len = 0};
+        Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
-    ByteArray out = encode_value_to_cbor(val);
+    Bytes out = encode_value_to_cbor(val);
     value_free(val);
     return out;
 }
 
-static Message *cbor_deserialize(const Serializer *self, const uint8_t *data, size_t len) {
+static Message *cbor_deserialize(const Serializer *self, Bytes data) {
     (void) self;
 
-    if (!data || len == 0) {
+    if (data.len == 0) {
         return NULL;
     }
 
-    Value *val = decode_cbor_to_value(data, len);
+    Value *val = decode_cbor_to_value(data.data, data.len);
     if (!val) {
         return NULL;
     }
@@ -203,9 +203,8 @@ static Message *cbor_deserialize(const Serializer *self, const uint8_t *data, si
 
     Message *msg = NULL;
     if (code == 65) {
-        msg = registered_parse(val);
+        msg = registered_parse(&val->list_val);
     }
-    // Add more message types as needed
 
     value_free(val);
     return msg;

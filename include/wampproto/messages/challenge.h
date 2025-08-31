@@ -7,11 +7,11 @@
 typedef struct {
     Message base;
     char *auth_method;
-    Value auth_extra;
+    Dict auth_extra;
 } Challenge;
 
-Challenge *challenge_new(char *auth_method, Value auth_extra);
+Challenge *challenge_new(char *auth_method, Dict auth_extra);
 
-Challenge *challenge_parse(const Value *val);
+Challenge *challenge_parse(const List *val);
 
 #endif

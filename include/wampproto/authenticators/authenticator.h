@@ -10,7 +10,7 @@ typedef struct ClientAuthenticator ClientAuthenticator;
 struct ClientAuthenticator {
     const char *(*auth_method)(const ClientAuthenticator *self);
     const char *(*auth_id)(const ClientAuthenticator *self);
-    Value *(*auth_extra)(const ClientAuthenticator *self);
+    Dict *(*auth_extra)(const ClientAuthenticator *self);
 
     Authenticate *(*authenticate)(const ClientAuthenticator *self, const Challenge *challenge);
 

@@ -7,11 +7,11 @@
 typedef struct {
     Message base;
     char *signature;
-    Value auth_extra;
+    Dict auth_extra;
 } Authenticate;
 
-Authenticate *authenticate_new(char *signature, Value auth_extra);
+Authenticate *authenticate_new(char *signature, Dict auth_extra);
 
-Authenticate *authenticate_parse(const Value *val);
+Authenticate *authenticate_parse(const List *val);
 
 #endif

@@ -8,11 +8,11 @@ typedef struct Message Message;
 struct Message {
     int (*message_type)(const Message *self);
 
-    Value *(*marshal)(const Message *self);
+    List *(*marshal)(const Message *self);
 
     void (*free)(Message *self);
 
-    Message *(*parse)(const Value *data);
+    Message *(*parse)(const List *data);
 };
 
 #endif

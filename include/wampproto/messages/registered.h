@@ -12,6 +12,6 @@ typedef struct {
 
 Registered *registered_new(int64_t request_id, int64_t registration_id);
 
-Message *registered_parse(const Value *val);
+Message *registered_parse(const List *val);
 
 #endif

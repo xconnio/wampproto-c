@@ -178,10 +178,8 @@ static int value_to_msgpack(msgpack_packer *pk, const Value *value) {
     }
 }
 
-/* ---------- Public encode/decode to ByteArray ---------- */
-
-static ByteArray encode_value_to_msgpack(const Value *val) {
-    ByteArray out = {.data = NULL, .len = 0};
+static Bytes encode_value_to_msgpack(const Value *val) {
+    Bytes out = {.data = NULL, .len = 0};
     if (!val) return out;
 
     msgpack_sbuffer sbuf;
@@ -227,9 +225,9 @@ static Value *decode_msgpack_to_value(const uint8_t *data, size_t len) {
     return v;
 }
 
-static ByteArray msgpack_serialize(const Serializer *self, const Message *msg) {
+static Bytes msgpack_serialize(const Serializer *self, const Message *msg) {
     (void) self;
-    ByteArray out = {.data = NULL, .len = 0};
+    Bytes out = {.data = NULL, .len = 0};
     if (!msg) return out;
 
     Value *val = msg->marshal(msg);
@@ -240,11 +238,11 @@ static ByteArray msgpack_serialize(const Serializer *self, const Message *msg) {
     return out;
 }
 
-static Message *msgpack_deserialize(const Serializer *self, const uint8_t *data, size_t len) {
+static Message *msgpack_deserialize(const Serializer *self, Bytes data) {
     (void) self;
-    if (!data || len == 0) return NULL;
+    if (data.len == 0) return NULL;
 
-    Value *val = decode_msgpack_to_value(data, len);
+    Value *val = decode_msgpack_to_value(data.data, data.len);
     if (!val) return NULL;
 
     if (val->type != VALUE_LIST || val->list_val.len < 1) {
@@ -252,13 +250,12 @@ static Message *msgpack_deserialize(const Serializer *self, const uint8_t *data,
         return NULL;
     }
 
-    int64_t code = value_as_int(val->list_val.items[0]);
+    const int64_t code = value_as_int(val->list_val.items[0]);
 
     Message *msg = NULL;
     if (code == 65) {
-        msg = registered_parse(val);
+        msg = registered_parse(&val->list_val);
     }
-    // Add more message types as needed
 
     value_free(val);
     return msg;

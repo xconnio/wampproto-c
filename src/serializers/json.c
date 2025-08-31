@@ -89,17 +89,17 @@ static Value *cjson_to_value(const cJSON *json) {
     return value_null();
 }
 
-static ByteArray json_serialize(const Serializer *self, const Message *msg) {
+static Bytes json_serialize(const Serializer *self, const Message *msg) {
     (void) self;
-    if (!msg) return (ByteArray){NULL, 0};
+    if (!msg) return (Bytes){NULL, 0};
 
     Value *val = msg->marshal(msg);
-    if (!val) return (ByteArray){NULL, 0};
+    if (!val) return (Bytes){NULL, 0};
 
     cJSON *json = value_to_cjson(val);
     char *str = cJSON_PrintUnformatted(json);
 
-    ByteArray out = {
+    Bytes out = {
         .data = (uint8_t*)str,
         .len = strlen(str)
     };
@@ -109,11 +109,11 @@ static ByteArray json_serialize(const Serializer *self, const Message *msg) {
     return out;
 }
 
-static Message *json_deserialize(const Serializer *self, const uint8_t *data, size_t len) {
+static Message *json_deserialize(const Serializer *self, Bytes data) {
     (void) self;
-    if (!data || len == 0) return NULL;
+    if (data.len == 0) return NULL;
 
-    char *copy = strndup((const char *)data, len);
+    char *copy = strndup((const char *)data.data, data.len);
     cJSON *json = cJSON_Parse(copy);
     free(copy);
 
@@ -127,11 +127,11 @@ static Message *json_deserialize(const Serializer *self, const uint8_t *data, si
         return NULL;
     }
 
-    int64_t code = value_as_int(val->list_val.items[0]);
+    const int64_t code = value_as_int(val->list_val.items[0]);
     Message *msg = NULL;
 
     if (code == 65) {
-        msg = registered_parse(val);
+        msg = registered_parse(&val->list_val);
     }
     // TODO: add more messages
 
