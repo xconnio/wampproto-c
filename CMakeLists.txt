@@ -38,7 +38,6 @@ if(CLANG_TIDY_EXE)
     )
 endif()
 
-
 file(GLOB_RECURSE WAMPPROTO_SOURCES src/*.c)
 add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         # Public headers
@@ -77,8 +76,18 @@ add_library(wampproto STATIC ${WAMPPROTO_SOURCES}
         src/serializers/helpers.c
 )
 
-target_link_libraries(wampproto PUBLIC tinycbor cjson msgpackc)
+# Add TinyCBOR install path
+# Location of your local TinyCBOR install
+set(TINYCBOR_ROOT "${CMAKE_SOURCE_DIR}/deps/tinycbor/install")
 
+add_library(TinyCBOR::TinyCBOR STATIC IMPORTED)
+
+set_target_properties(TinyCBOR::TinyCBOR PROPERTIES
+        IMPORTED_LOCATION "${TINYCBOR_ROOT}/lib/libtinycbor.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${TINYCBOR_ROOT}/include/"
+)
+
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson msgpackc)
 
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC
