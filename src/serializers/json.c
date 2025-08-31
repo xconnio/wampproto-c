@@ -122,17 +122,17 @@ static Bytes json_serialize(const Serializer *self, const Message *msg)
     if (!msg)
         return (Bytes){NULL, 0};
 
-    Value *val = msg->marshal(msg);
+    List *val = msg->marshal(msg);
     if (!val)
         return (Bytes){NULL, 0};
 
-    cJSON *json = value_to_cjson(val);
+    cJSON *json = value_to_cjson((Value *)val);
     char *str = cJSON_PrintUnformatted(json);
 
-    Bytes out = {.data = (uint8_t *)str, .len = strlen(str)};
+    const Bytes out = {.data = (uint8_t *)str, .len = strlen(str)};
 
     cJSON_Delete(json);
-    value_free(val);
+    value_free((Value *)val);
     return out;
 }
 

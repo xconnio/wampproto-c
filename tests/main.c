@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include <assert.h>
 
+#include "wampproto/messages/message.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/serializers.h"
 

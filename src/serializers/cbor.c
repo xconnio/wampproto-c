@@ -128,27 +128,27 @@ static Value *cbor_value_to_value(CborValue *it)
 
 CborError cbor_encode_value(CborEncoder *encoder, const Value *val);
 
-static Bytes encode_value_to_cbor(const Value *val)
+static Bytes encode_value_to_cbor(const List *val)
 {
     if (!val)
     {
-        Bytes out = {.data = NULL, .len = 0};
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
     // Estimate buffer size
-    size_t buffer_size = 1024;
+    const size_t buffer_size = 1024;
     uint8_t *buffer = malloc(buffer_size);
     if (!buffer)
     {
-        Bytes out = {.data = NULL, .len = 0};
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, buffer, buffer_size, 0);
 
-    CborError err = cbor_encode_value(&encoder, val);
+    const CborError err = cbor_encode_value(&encoder, (Value *)val);
     if (err != CborNoError)
     {
         free(buffer);
@@ -174,7 +174,7 @@ static Value *decode_cbor_to_value(const uint8_t *data, size_t len)
     CborParser parser;
     CborValue it;
 
-    CborError err = cbor_parser_init(data, len, 0, &parser, &it);
+    const CborError err = cbor_parser_init(data, len, 0, &parser, &it);
     if (err != CborNoError)
     {
         return NULL;
@@ -189,19 +189,19 @@ static Bytes cbor_serialize(const Serializer *self, const Message *msg)
 
     if (!msg)
     {
-        Bytes out = {.data = NULL, .len = 0};
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
     List *val = msg->marshal(msg);
     if (!val)
     {
-        Bytes out = {.data = NULL, .len = 0};
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
-    Bytes out = encode_value_to_cbor(val);
-    value_free(val);
+    const Bytes out = encode_value_to_cbor(val);
+    value_free((Value *)val);
     return out;
 }
 
