@@ -33,7 +33,7 @@ static Value *msgpack_object_to_value(const msgpack_object *obj)
 
     case MSGPACK_OBJECT_NEGATIVE_INTEGER:
     {
-        int64_t v = (int64_t)obj->via.i64;
+        int64_t v = obj->via.i64;
         return value_int(v);
     }
 
@@ -208,16 +208,17 @@ static int value_to_msgpack(msgpack_packer *pk, const Value *value)
     }
 
     default:
-        // Unknown type — you might want a specific error policy here
         return -1;
     }
 }
 
-static Bytes encode_value_to_msgpack(const Value *val)
+static Bytes encode_value_to_msgpack(const List *val)
 {
-    Bytes out = {.data = NULL, .len = 0};
     if (!val)
+    {
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
+    }
 
     msgpack_sbuffer sbuf;
     msgpack_sbuffer_init(&sbuf);
@@ -225,22 +226,24 @@ static Bytes encode_value_to_msgpack(const Value *val)
     msgpack_packer pk;
     msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-    if (value_to_msgpack(&pk, val) != 0)
+    if (value_to_msgpack(&pk, (Value *)val) != 0)
     {
         msgpack_sbuffer_destroy(&sbuf);
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
 
     // Copy out to a heap buffer we own
-    uint8_t *buf = (uint8_t *)malloc(sbuf.size);
+    uint8_t *buf = malloc(sbuf.size);
     if (!buf)
     {
         msgpack_sbuffer_destroy(&sbuf);
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
     }
+
     memcpy(buf, sbuf.data, sbuf.size);
-    out.data = buf;
-    out.len = sbuf.size;
+    const Bytes out = {.data = buf, .len = sbuf.size};
 
     msgpack_sbuffer_destroy(&sbuf);
     return out;
@@ -270,16 +273,21 @@ static Value *decode_msgpack_to_value(const uint8_t *data, size_t len)
 static Bytes msgpack_serialize(const Serializer *self, const Message *msg)
 {
     (void)self;
-    Bytes out = {.data = NULL, .len = 0};
     if (!msg)
+    {
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
+    }
 
-    Value *val = msg->marshal(msg);
+    List *val = msg->marshal(msg);
     if (!val)
+    {
+        const Bytes out = {.data = NULL, .len = 0};
         return out;
+    }
 
-    out = encode_value_to_msgpack(val);
-    value_free(val);
+    const Bytes out = encode_value_to_msgpack(val);
+    value_free((Value *)val);
     return out;
 }
 
