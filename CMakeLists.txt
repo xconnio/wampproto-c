@@ -92,14 +92,16 @@ set_target_properties(TinyCBOR::TinyCBOR PROPERTIES
 )
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(MSGPACK msgpack-c)
-if (NOT MSGPACK_FOUND)
-    pkg_check_modules(MSGPACK msgpackc REQUIRED)
+pkg_check_modules(MSGPACK msgpackc)
+
+if (MSGPACK_FOUND)
+    set(MSGPACK_LIB msgpackc)
+else()
+    pkg_check_modules(MSGPACK msgpack-c REQUIRED)
+    set(MSGPACK_LIB msgpack-c)
 endif()
 
-include_directories(${MSGPACK_INCLUDE_DIRS})
-link_directories(${MSGPACK_LIBRARY_DIRS})
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIBRARIES})
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB})
 
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC
