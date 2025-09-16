@@ -4,8 +4,8 @@ NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu)
 .PHONY: setup lint format test build clean
 
 setup:
-	sudo apt-get update
-	sudo apt-get install -y cmake clang-format clang-tidy build-essential libmsgpack-dev libcjson-dev
+	sudo apt update
+	sudo apt install -y cmake clang-format clang-tidy build-essential libmsgpack-dev libcjson-dev
 
 	mkdir -p deps
 	git clone https://github.com/intel/tinycbor.git ./deps/tinycbor -b v0.6.1
