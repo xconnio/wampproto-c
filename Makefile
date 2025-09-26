@@ -21,9 +21,11 @@ build:
 
 format: build
 	cmake --build $(CMAKE_DIR) --target format
+	cmake-format -i CMakeLists.txt
 
 lint: build
 	cmake --build $(CMAKE_DIR) --target lint
+	cmake-lint CMakeLists.txt
 
 test: build
 	ctest --test-dir $(CMAKE_DIR) --output-on-failure
