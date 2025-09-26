@@ -91,7 +91,14 @@ set_target_properties(TinyCBOR::TinyCBOR PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${TINYCBOR_ROOT}/include/"
 )
 
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson msgpackc)
+find_library(MSGPACK_LIB NAMES msgpackc msgpack-c)
+if (NOT MSGPACK_LIB)
+    message(FATAL_ERROR "Could not find msgpack library (tried msgpackc and msgpack-c)")
+else()
+    message(STATUS "Found msgpack library: ${MSGPACK_LIB}")
+endif()
+
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB})
 
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC
