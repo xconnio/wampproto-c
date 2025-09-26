@@ -1,6 +1,7 @@
 #include "wampproto/transports/rawsocket.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 Handshake *handshake_new(const Serializer serializer, const int max_message_size)
@@ -26,7 +27,6 @@ int send_handshake(const Handshake *hs, uint8_t out[4])
 
     const double log2_val = log2(hs->max_message_size);
     const int log2_int = (int)log2_val;
-
     if (1 << log2_int != hs->max_message_size || log2_int < 9)
         return -2;
 
