@@ -5,7 +5,7 @@ NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu)
 
 setup:
 	sudo apt update
-	sudo apt install -y cmake clang-format clang-tidy build-essential libmsgpack-dev libcjson-dev
+	sudo apt install -y cmake clang-format clang-tidy build-essential libmsgpack-dev libcjson-dev cmake-format
 
 	mkdir -p deps
 	git clone https://github.com/intel/tinycbor.git ./deps/tinycbor -b v0.6.1
@@ -21,9 +21,11 @@ build:
 
 format: build
 	cmake --build $(CMAKE_DIR) --target format
+	cmake-format -i CMakeLists.txt
 
 lint: build
 	cmake --build $(CMAKE_DIR) --target lint
+	cmake-lint CMakeLists.txt
 
 test: build
 	ctest --test-dir $(CMAKE_DIR) --output-on-failure

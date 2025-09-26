@@ -31,24 +31,8 @@ if(CLANG_TIDY_EXE)
 endif()
 
 file(GLOB_RECURSE WAMPPROTO_SOURCES src/*.c)
-add_library(
-  wampproto STATIC
-  ${WAMPPROTO_SOURCES}
-  # Authenticators
-  src/authenticators/anonymous.c
-  src/authenticators/cryptosign.c
-  src/authenticators/ticket.c
-  src/authenticators/wampcra.c
-  # Messages
-  src/messages/registered.c
-  src/messages/call.c
-  # Serializers
-  src/serializers/helpers.c
-  src/serializers/cbor.c
-  src/serializers/json.c
-  src/serializers/msgpack.c
-  # Core
-  src/value.c)
+
+add_library(wampproto STATIC ${WAMPPROTO_SOURCES})
 
 set(TINYCBOR_ROOT "${CMAKE_SOURCE_DIR}/deps/tinycbor/install")
 
@@ -67,7 +51,8 @@ else()
   message(STATUS "Found msgpack library: ${MSGPACK_LIB}")
 endif()
 
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB})
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB}
+                                        m)
 
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -75,8 +60,12 @@ target_include_directories(wampproto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 option(BUILD_TESTS "Build test runner" ON)
 if(BUILD_TESTS)
   enable_testing()
-  add_executable(wampproto_test tests/main.c)
-  target_link_libraries(wampproto_test PRIVATE wampproto)
 
-  add_test(NAME wampproto_test COMMAND wampproto_test)
+  add_executable(test_serializers tests/test_serializers.c)
+  target_link_libraries(test_serializers PRIVATE wampproto)
+  add_test(NAME test_serializers COMMAND test_serializers)
+
+  add_executable(test_rawsocket tests/test_rawsocket.c)
+  target_link_libraries(test_rawsocket PRIVATE wampproto)
+  add_test(NAME test_rawsocket COMMAND test_rawsocket)
 endif()
