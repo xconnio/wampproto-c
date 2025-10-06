@@ -1,3 +1,5 @@
+#include <signal.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,9 +58,15 @@ static cJSON *value_to_cjson(const Value *val)
     case VALUE_DICT:
     {
         cJSON *obj = cJSON_CreateObject();
-        for (Dict *d = val->dict_val; d; d = d->next)
+        Dict *dict = val->dict_val;
+        for (size_t index = 0; index < dict->size; index++)
         {
-            cJSON_AddItemToObject(obj, d->key, value_to_cjson(d->value));
+            Entry *curr = dict->buckets[index];
+            while (curr)
+            {
+                cJSON_AddItemToObject(obj, curr->key, value_to_cjson(curr->value));
+                curr = curr->next;
+            }
         }
         return obj;
     }
@@ -160,7 +168,7 @@ static Message *json_deserialize(const Serializer *self, Bytes data)
 
     Message *msg = to_message(&val->list_val);
 
-    value_free(val);
+    free(val);
     return msg;
 }
 

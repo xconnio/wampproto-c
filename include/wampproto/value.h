@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct Value;
-struct Dict;
+typedef struct Value Value;
+typedef struct Entry Entry;
 
 typedef enum
 {
@@ -19,11 +19,19 @@ typedef enum
     VALUE_BYTES,
 } ValueType;
 
-typedef struct Dict
+typedef struct Entry
 {
     char *key;
-    struct Value *value;
-    struct Dict *next;
+    Value *value;
+    Entry *next;
+
+} Entry;
+
+typedef struct Dict
+{
+    Entry **buckets;
+    size_t size;
+    size_t count;
 } Dict;
 
 typedef struct
@@ -63,6 +71,8 @@ Value *value_dict(void);
 Value *value_bytes(const uint8_t *data, size_t len);
 
 int64_t value_as_int(const Value *v);
+char *value_as_str(const Value *v);
+Dict *value_as_dict(const Value *v);
 
 int value_list_set(Value *list, size_t idx, Value *val);
 int value_dict_set(Value *dict, const char *key, Value *val);
