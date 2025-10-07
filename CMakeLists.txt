@@ -51,11 +51,26 @@ else()
   message(STATUS "Found msgpack library: ${MSGPACK_LIB}")
 endif()
 
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB}
-                                        m)
-
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+find_package(OpenSSL QUIET)
+find_library(SODIUM_LIBRARY sodium)
+find_path(SODIUM_INCLUDE_DIR sodium.h)
+
+if(OpenSSL_FOUND)
+  target_compile_definitions(wampproto PRIVATE HAVE_OPENSSL)
+  target_link_libraries(wampproto PRIVATE OpenSSL::Crypto)
+  target_include_directories(wampproto PRIVATE ${OPENSSL_INCLUDE_DIR})
+endif()
+
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson msgpackc
+                                        ${SODIUM_LIBRARY} m)
+
+# Public include dir (installed, exported)
+target_include_directories(
+  wampproto
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  PRIVATE ${SODIUM_INCLUDE_DIR})
 # Test runner / entrypoint
 option(BUILD_TESTS "Build test runner" ON)
 if(BUILD_TESTS)
@@ -68,4 +83,8 @@ if(BUILD_TESTS)
   add_executable(test_rawsocket tests/test_rawsocket.c)
   target_link_libraries(test_rawsocket PRIVATE wampproto)
   add_test(NAME test_rawsocket COMMAND test_rawsocket)
+
+  add_executable(wampcra_test tests/test_wampcra.c)
+  target_link_libraries(wampcra_test PRIVATE wampproto)
+  add_test(NAME wampcra_test COMMAND wampcra_test)
 endif()

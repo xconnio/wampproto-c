@@ -55,7 +55,7 @@ Value *value_bool(int b)
 char *value_as_str(const Value *value)
 {
 
-    if (value->type != VALUE_STR)
+    if (value == NULL || value->type != VALUE_STR)
         return "";
 
     return value->str_val;

@@ -4,15 +4,17 @@
 #include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
+#define MESSAGE_TYPE_CHALLENGE 4
+
 typedef struct
 {
     Message base;
     char *auth_method;
-    Dict auth_extra;
+    Dict *auth_extra;
 } Challenge;
 
-Challenge *challenge_new(char *auth_method, Dict auth_extra);
+Challenge *challenge_new(char *auth_method, Dict *auth_extra);
 
-Challenge *challenge_parse(const List *val);
+Message *challenge_parse(const List *val);
 
 #endif

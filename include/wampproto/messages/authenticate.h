@@ -4,15 +4,17 @@
 #include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
+#define MESSAGE_TYPE_AUTHENTICATE 5
+
 typedef struct
 {
     Message base;
-    char *signature;
-    Dict auth_extra;
+    const char *signature;
+    Dict *auth_extra;
 } Authenticate;
 
 Authenticate *authenticate_new(const char *signature, Dict *auth_extra);
 
-Authenticate *authenticate_parse(const List *val);
+Message *authenticate_parse(const List *val);
 
 #endif
