@@ -1,6 +1,8 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static Value *value_alloc(ValueType type)
@@ -22,11 +24,25 @@ Value *value_int(int64_t n)
     return v;
 }
 
+double value_as_double(Value *value)
+{
+    if (value->type != VALUE_FLOAT)
+        return 0.0;
+
+    return value->float_val;
+}
+
 Value *value_float(double n)
 {
     Value *v = value_alloc(VALUE_FLOAT);
     v->float_val = n;
     return v;
+}
+
+int value_as_bool(Value *value)
+{
+
+    return value->bool_val;
 }
 
 Value *value_bool(int b)
@@ -36,11 +52,25 @@ Value *value_bool(int b)
     return v;
 }
 
+char *value_as_str(const Value *value)
+{
+
+    if (value->type != VALUE_STR)
+        return "";
+
+    return value->str_val;
+}
+
 Value *value_str(const char *s)
 {
     Value *v = value_alloc(VALUE_STR);
     v->str_val = strdup(s);
     return v;
+}
+
+List value_as_list(Value *value)
+{
+    return value->list_val;
 }
 
 Value *value_list(const size_t len)
@@ -52,11 +82,24 @@ Value *value_list(const size_t len)
     return v;
 }
 
+Value *create_value_from_list(List *list)
+{
+    Value *v = value_alloc(VALUE_LIST);
+    v->list_val = *list;
+    memset(list, 0, sizeof(List));
+    return v;
+}
+
 Value *value_dict(void)
 {
     Value *v = value_alloc(VALUE_DICT);
-    v->dict_val = NULL;
+    v->dict_val = create_dict(100);
     return v;
+}
+
+Dict *value_as_dict(const Value *value)
+{
+    return value->dict_val;
 }
 
 Value *value_bytes(const uint8_t *data, size_t len)
@@ -96,11 +139,9 @@ int value_dict_set(Value *dict, const char *key, Value *val)
 {
     if (!dict || dict->type != VALUE_DICT)
         return -1;
-    Dict *entry = malloc(sizeof(Dict));
-    entry->key = strdup(key);
-    entry->value = val;
-    entry->next = dict->dict_val;
-    dict->dict_val = entry;
+
+    Dict *map = dict->dict_val;
+    dict_insert(map, key, val);
     return 0;
 }
 
@@ -109,30 +150,8 @@ int value_dict_append(Value *dict, const char *key, Value *val)
     if (!dict || dict->type != VALUE_DICT || !key)
         return -1;
 
-    Dict *cur = dict->dict_val;
-    while (cur)
-    {
-        if (strcmp(cur->key, key) == 0)
-        {
-            value_free(cur->value);
-            cur->value = val;
-            return 0;
-        }
-        cur = cur->next;
-    }
-
-    Dict *entry = malloc(sizeof(Dict));
-    if (!entry)
-        return -1;
-    entry->key = strdup(key);
-    if (!entry->key)
-    {
-        free(entry);
-        return -1;
-    }
-    entry->value = val;
-    entry->next = dict->dict_val;
-    dict->dict_val = entry;
+    Dict *map = dict->dict_val;
+    dict_insert(map, key, val);
     return 0;
 }
 
@@ -164,6 +183,7 @@ Value *value_from_dict(Dict *dict)
 
 void value_free(Value *v)
 {
+
     if (!v)
         return;
     switch (v->type)
@@ -181,14 +201,7 @@ void value_free(Value *v)
     case VALUE_DICT:
     {
         Dict *cur = v->dict_val;
-        while (cur)
-        {
-            Dict *next = cur->next;
-            free(cur->key);
-            value_free(cur->value);
-            free(cur);
-            cur = next;
-        }
+        dict_free(cur);
         break;
     }
     case VALUE_BYTES:

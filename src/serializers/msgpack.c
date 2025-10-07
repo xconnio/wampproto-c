@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -181,28 +183,33 @@ static int value_to_msgpack(msgpack_packer *pk, const Value *value)
     case VALUE_DICT:
     {
         // Count entries in your linked list Dict*
-        size_t count = 0;
-        for (Dict *d = value->dict_val; d; d = d->next)
-            count++;
+        Dict *dict = value->dict_val;
+        size_t count = dict->count;
 
         int rc = msgpack_pack_map(pk, (uint32_t)count);
         if (rc != 0)
             return rc;
-        for (Dict *d = value->dict_val; d; d = d->next)
-        {
-            // key (string)
-            size_t klen = strlen(d->key);
-            rc = msgpack_pack_str(pk, (uint32_t)klen);
-            if (rc != 0)
-                return rc;
-            rc = msgpack_pack_str_body(pk, d->key, klen);
-            if (rc != 0)
-                return rc;
 
-            // value (any)
-            rc = value_to_msgpack(pk, d->value);
-            if (rc != 0)
-                return rc;
+        for (size_t index = 0; index < dict->size; index++)
+        {
+            Entry *curr = dict->buckets[index];
+            while (curr)
+            {
+                size_t klen = strlen(curr->key);
+                rc = msgpack_pack_str(pk, (uint32_t)klen);
+                if (rc != 0)
+                    return rc;
+                rc = msgpack_pack_str_body(pk, curr->key, klen);
+                if (rc != 0)
+                    return rc;
+
+                // value (any)
+                rc = value_to_msgpack(pk, curr->value);
+                if (rc != 0)
+                    return rc;
+
+                curr = curr->next;
+            }
         }
         return 0;
     }
@@ -309,7 +316,7 @@ static Message *msgpack_deserialize(const Serializer *self, Bytes data)
 
     Message *msg = to_message(&val->list_val);
 
-    value_free(val);
+    free(val);
     return msg;
 }
 

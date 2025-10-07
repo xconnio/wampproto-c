@@ -1,8 +1,11 @@
+#include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <tinycbor/cbor.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/messages.h"
 #include "wampproto/serializers.h"
 #include "wampproto/value.h"
@@ -76,7 +79,8 @@ static Value *cbor_value_to_value(CborValue *it)
             {
                 value_list_append(arr, item);
             }
-            cbor_value_advance(&arrayIt);
+            if (item->type != VALUE_DICT)
+                cbor_value_advance(&arrayIt);
         }
 
         cbor_value_leave_container(it, &arrayIt);
@@ -111,7 +115,7 @@ static Value *cbor_value_to_value(CborValue *it)
                 Value *val = cbor_value_to_value(&mapIt);
                 if (val)
                 {
-                    value_dict_set(dict, key, val);
+                    dict_insert(dict->dict_val, key, val);
                 }
                 cbor_value_advance(&mapIt);
             }
@@ -228,7 +232,7 @@ static Message *cbor_deserialize(const Serializer *self, Bytes data)
 
     Message *msg = to_message(&val->list_val);
 
-    value_free(val);
+    free(val);
     return msg;
 }
 
@@ -292,23 +296,28 @@ CborError cbor_encode_value(CborEncoder *encoder, const Value *value)
 
     case VALUE_DICT:
     {
-        size_t count = 0;
-        for (Dict *d = value->dict_val; d; d = d->next)
-            count++;
+        Dict *dict = value->dict_val;
+        size_t count = dict->count;
 
         CborEncoder mapEncoder;
         CborError err = cbor_encoder_create_map(encoder, &mapEncoder, count);
         if (err != CborNoError)
             return err;
 
-        for (Dict *d = value->dict_val; d; d = d->next)
+        for (size_t index = 0; index < dict->size; index++)
         {
-            err = cbor_encode_text_string(&mapEncoder, d->key, strlen(d->key));
-            if (err != CborNoError)
-                return err;
-            err = cbor_encode_value(&mapEncoder, d->value);
-            if (err != CborNoError)
-                return err;
+            Entry *curr = dict->buckets[index];
+            while (curr)
+            {
+                err = cbor_encode_text_string(&mapEncoder, curr->key, strlen(curr->key));
+                if (err != CborNoError)
+                    return err;
+                err = cbor_encode_value(&mapEncoder, curr->value);
+                if (err != CborNoError)
+                    return err;
+
+                curr = curr->next;
+            }
         }
         return cbor_encoder_close_container(encoder, &mapEncoder);
     }
