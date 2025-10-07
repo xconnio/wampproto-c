@@ -81,7 +81,7 @@ int value_list_append(Value *list, Value *val);
 int value_dict_append(Value *dict, const char *key, Value *val);
 
 Value *value_from_dict(Dict *dict);
-Value *value_from_list(List *list);
+Value *value_from_list(const List *list);
 
 #define VALUE_FROM_INT(n) value_int((n))
 #define VALUE_FROM_FLOAT(x) value_float((x))

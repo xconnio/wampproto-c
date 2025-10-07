@@ -174,6 +174,13 @@ int64_t value_as_int(const Value *v)
     }
 }
 
+Value *value_from_list(const List *list)
+{
+    Value *v = value_alloc(VALUE_LIST);
+    v->list_val = *list;
+    return v;
+}
+
 Value *value_from_dict(Dict *dict)
 {
     Value *v = value_alloc(VALUE_DICT);
