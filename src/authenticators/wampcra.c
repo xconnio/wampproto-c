@@ -15,7 +15,7 @@
 
 char *sign_signature(const char *secret, Dict *auth_extra);
 
-Authenticate *authenticate(const ClientAuthenticator *self, const Challenge *challenge)
+static Authenticate *authenticate(const ClientAuthenticator *self, const Challenge *challenge)
 {
 
     Dict *auth_extra = challenge->auth_extra;

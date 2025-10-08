@@ -3,11 +3,8 @@
 #include "wampproto/authenticators/authenticator.h"
 #include "wampproto/value.h"
 
-Authenticate *authenticate(const ClientAuthenticator *self, const Challenge *challenge)
+static Authenticate *authenticate(const ClientAuthenticator *self, const Challenge *challenge)
 {
-    (void)self;
-    (void)challenge;
-
     return authenticate_new(self->auth_data, NULL);
 }
 
