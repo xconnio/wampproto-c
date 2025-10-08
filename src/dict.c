@@ -80,10 +80,10 @@ void dict_insert(Dict *dict, const char *key, Value *value)
 
     dict->count++;
 
-    // if ((double)dict->count / dict->size > 0.7)
-    // {
-    //     resize_dict(dict, dict->size * 2);
-    // }
+    if ((double)dict->count / dict->size > 0.7)
+    {
+        resize_dict(dict, dict->size * 2);
+    }
 }
 
 Value *dict_get(Dict *dict, const char *key)
