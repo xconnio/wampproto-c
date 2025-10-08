@@ -56,6 +56,7 @@ target_include_directories(wampproto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 find_package(OpenSSL QUIET)
 find_library(SODIUM_LIBRARY sodium)
 find_path(SODIUM_INCLUDE_DIR sodium.h)
+find_library(UTHASH_LIB, uthash)
 
 if(OpenSSL_FOUND)
   target_compile_definitions(wampproto PRIVATE HAVE_OPENSSL)
