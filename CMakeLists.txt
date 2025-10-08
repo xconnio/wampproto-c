@@ -63,7 +63,7 @@ if(OpenSSL_FOUND)
   target_include_directories(wampproto PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif()
 
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson msgpackc
+target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB}
                                         ${SODIUM_LIBRARY} m)
 
 # Public include dir (installed, exported)
