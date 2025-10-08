@@ -297,28 +297,24 @@ CborError cbor_encode_value(CborEncoder *encoder, const Value *value)
     case VALUE_DICT:
     {
         Dict *dict = value->dict_val;
-        size_t count = dict->count;
 
         CborEncoder mapEncoder;
-        CborError err = cbor_encoder_create_map(encoder, &mapEncoder, count);
+        CborError err = cbor_encoder_create_map(encoder, &mapEncoder, dict->count);
         if (err != CborNoError)
             return err;
 
-        for (size_t index = 0; index < dict->size; index++)
+        Entry *curr, *tmp;
+        HASH_ITER(hh, dict->table, curr, tmp)
         {
-            Entry *curr = dict->buckets[index];
-            while (curr)
-            {
-                err = cbor_encode_text_string(&mapEncoder, curr->key, strlen(curr->key));
-                if (err != CborNoError)
-                    return err;
-                err = cbor_encode_value(&mapEncoder, curr->value);
-                if (err != CborNoError)
-                    return err;
+            err = cbor_encode_text_string(&mapEncoder, curr->key, strlen(curr->key));
+            if (err != CborNoError)
+                return err;
 
-                curr = curr->next;
-            }
+            err = cbor_encode_value(&mapEncoder, curr->value);
+            if (err != CborNoError)
+                return err;
         }
+
         return cbor_encoder_close_container(encoder, &mapEncoder);
     }
 

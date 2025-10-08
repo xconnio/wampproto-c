@@ -182,35 +182,28 @@ static int value_to_msgpack(msgpack_packer *pk, const Value *value)
 
     case VALUE_DICT:
     {
-        // Count entries in your linked list Dict*
         Dict *dict = value->dict_val;
-        size_t count = dict->count;
-
-        int rc = msgpack_pack_map(pk, (uint32_t)count);
+        int rc = msgpack_pack_map(pk, (uint32_t)dict->count);
         if (rc != 0)
             return rc;
 
-        for (size_t index = 0; index < dict->size; index++)
+        Entry *curr, *tmp;
+        HASH_ITER(hh, dict->table, curr, tmp)
         {
-            Entry *curr = dict->buckets[index];
-            while (curr)
-            {
-                size_t klen = strlen(curr->key);
-                rc = msgpack_pack_str(pk, (uint32_t)klen);
-                if (rc != 0)
-                    return rc;
-                rc = msgpack_pack_str_body(pk, curr->key, klen);
-                if (rc != 0)
-                    return rc;
+            size_t klen = strlen(curr->key);
+            rc = msgpack_pack_str(pk, (uint32_t)klen);
+            if (rc != 0)
+                return rc;
 
-                // value (any)
-                rc = value_to_msgpack(pk, curr->value);
-                if (rc != 0)
-                    return rc;
+            rc = msgpack_pack_str_body(pk, curr->key, klen);
+            if (rc != 0)
+                return rc;
 
-                curr = curr->next;
-            }
+            rc = value_to_msgpack(pk, curr->value);
+            if (rc != 0)
+                return rc;
         }
+
         return 0;
     }
 
