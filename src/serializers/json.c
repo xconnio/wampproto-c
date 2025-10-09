@@ -49,9 +49,9 @@ static cJSON *value_to_cjson(const Value *val)
     case VALUE_LIST:
     {
         cJSON *arr = cJSON_CreateArray();
-        for (size_t i = 0; i < val->list_val.len; i++)
+        for (size_t i = 0; i < val->list_val->len; i++)
         {
-            cJSON_AddItemToArray(arr, value_to_cjson(val->list_val.items[i]));
+            cJSON_AddItemToArray(arr, value_to_cjson(val->list_val->items[i]));
         }
         return arr;
     }
@@ -157,13 +157,13 @@ static Message *json_deserialize(const Serializer *self, Bytes data)
     Value *val = cjson_to_value(json);
     cJSON_Delete(json);
 
-    if (!val || val->type != VALUE_LIST || val->list_val.len < 1)
+    if (!val || val->type != VALUE_LIST || val->list_val->len < 1)
     {
         value_free(val);
         return NULL;
     }
 
-    Message *msg = to_message(&val->list_val);
+    Message *msg = to_message(val->list_val);
 
     free(val);
     return msg;

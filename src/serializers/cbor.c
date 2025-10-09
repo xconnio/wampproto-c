@@ -224,13 +224,13 @@ static Message *cbor_deserialize(const Serializer *self, Bytes data)
         return NULL;
     }
 
-    if (val->type != VALUE_LIST || val->list_val.len < 1)
+    if (val->type != VALUE_LIST || val->list_val->len < 1)
     {
         value_free(val);
         return NULL;
     }
 
-    Message *msg = to_message(&val->list_val);
+    Message *msg = to_message(val->list_val);
 
     free(val);
     return msg;
@@ -280,13 +280,13 @@ CborError cbor_encode_value(CborEncoder *encoder, const Value *value)
     case VALUE_LIST:
     {
         CborEncoder list_encoder;
-        CborError err = cbor_encoder_create_array(encoder, &list_encoder, value->list_val.len);
+        CborError err = cbor_encoder_create_array(encoder, &list_encoder, value->list_val->len);
         if (err != CborNoError)
             return err;
 
-        for (size_t i = 0; i < value->list_val.len; ++i)
+        for (size_t i = 0; i < value->list_val->len; ++i)
         {
-            err = cbor_encode_value(&list_encoder, value->list_val.items[i]);
+            err = cbor_encode_value(&list_encoder, value->list_val->items[i]);
             if (err != CborNoError)
                 return err;
         }

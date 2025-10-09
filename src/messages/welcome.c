@@ -36,9 +36,9 @@ Welcome *welcome_new(int64_t session_id, Dict *details)
     welcome->authrole = str_from_dict(details, "authrole");
     welcome->authextra = dict_from_dict(details, "authextra");
     if (welcome->authextra == NULL)
-        welcome->authextra = create_dict(0);
+        welcome->authextra = create_dict();
 
-    welcome->roles = list_from_dict(details, "roles");
+    welcome->roles = dict_from_dict(details, "roles");
 
     return welcome;
 }

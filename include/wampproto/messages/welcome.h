@@ -17,7 +17,7 @@ typedef struct
     char *authrole;
     char *authmethod;
     Dict *authextra;
-    List roles;
+    Dict *roles;
 } Welcome;
 
 Welcome *welcome_new(int64_t session_id, Dict *details);

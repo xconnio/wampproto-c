@@ -33,7 +33,7 @@ Challenge *create_wampcra_challenge(void)
 {
     char *auth_method = "wampcra";
     char *challenge = "challenge_string";
-    Dict *auth_extra = create_dict(2);
+    Dict *auth_extra = create_dict();
     Value *value = value_str(challenge);
     dict_insert(auth_extra, "challenge", value);
 
@@ -48,7 +48,7 @@ Challenge *create_wampcra_salty_challenge(void)
     int64_t keylen = 32;
     int64_t iterations = 100;
 
-    Dict *auth_extra = create_dict(2);
+    Dict *auth_extra = create_dict();
     dict_insert(auth_extra, "challenge", value_str(challenge));
     dict_insert(auth_extra, "salt", value_str(salt));
     dict_insert(auth_extra, "keylen", value_int(keylen));
@@ -61,7 +61,7 @@ ClientAuthenticator *create_wampcra_authenticator(void)
 {
     char *auth_id = "john";
     char *secret = "mysupersecret";
-    Dict *auth_extra = create_dict(2);
+    Dict *auth_extra = create_dict();
 
     Challenge *challenge = create_wampcra_challenge();
 
@@ -76,7 +76,7 @@ ClientAuthenticator *create_salty_wampcra_authenticator(void)
 {
     char *auth_id = "john";
     char *secret = "mysupersecret";
-    Dict *auth_extra = create_dict(2);
+    Dict *auth_extra = create_dict();
 
     ClientAuthenticator *auth = wampcra_authenticator_new(auth_id, secret, auth_extra);
 
@@ -106,7 +106,7 @@ Challenge *create_cryptosign_challenge(void)
 {
     char *challenge_hex = "fa034062ad76352b53a25358854577730db82f367aa439709c91296d04a5716c";
 
-    Dict *auth_extra = create_dict(1);
+    Dict *auth_extra = create_dict();
     dict_insert(auth_extra, "challenge", value_str(challenge_hex));
 
     Challenge *challenge = challenge_new("cryptosign", auth_extra);

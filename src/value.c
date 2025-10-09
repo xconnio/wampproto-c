@@ -68,7 +68,7 @@ Value *value_str(const char *s)
     return v;
 }
 
-List value_as_list(Value *value)
+List *value_as_list(Value *value)
 {
     return value->list_val;
 }
@@ -76,16 +76,16 @@ List value_as_list(Value *value)
 Value *value_list(const size_t len)
 {
     Value *v = value_alloc(VALUE_LIST);
-    v->list_val.items = calloc(len, sizeof(Value *));
-    v->list_val.len = len;
-    v->list_val.len = 0; // <-- important!
+    v->list_val = malloc(sizeof(List));
+    v->list_val->items = calloc(len, sizeof(Value *));
+    v->list_val->len = 0;
     return v;
 }
 
 Value *create_value_from_list(List *list)
 {
     Value *v = value_alloc(VALUE_LIST);
-    v->list_val = *list;
+    v->list_val = list;
     memset(list, 0, sizeof(List));
     return v;
 }
@@ -118,9 +118,9 @@ int value_list_set(Value *list, size_t idx, Value *val)
 {
     if (!list || list->type != VALUE_LIST)
         return -1;
-    if (idx >= list->list_val.len)
+    if (idx >= list->list_val->len)
         return -1;
-    list->list_val.items[idx] = val;
+    list->list_val->items[idx] = val;
     return 0;
 }
 
@@ -128,13 +128,13 @@ int value_list_append(Value *list, Value *val)
 {
     if (!list || list->type != VALUE_LIST)
         return -1;
-    size_t n = list->list_val.len + 1;
-    Value **new_items = realloc(list->list_val.items, n * sizeof(Value *));
+    size_t n = list->list_val->len + 1;
+    Value **new_items = realloc(list->list_val->items, n * sizeof(Value *));
     if (!new_items)
         return -1;
-    new_items[list->list_val.len] = val;
-    list->list_val.items = new_items;
-    list->list_val.len = n;
+    new_items[list->list_val->len] = val;
+    list->list_val->items = new_items;
+    list->list_val->len = n;
     return 0;
 }
 
@@ -180,7 +180,7 @@ int64_t value_as_int(const Value *v)
 Value *value_from_list(const List *list)
 {
     Value *v = value_alloc(VALUE_LIST);
-    v->list_val = *list;
+    v->list_val = (List *)list;
     return v;
 }
 
@@ -202,11 +202,11 @@ void value_free(Value *v)
         free(v->str_val);
         break;
     case VALUE_LIST:
-        for (size_t i = 0; i < v->list_val.len; i++)
+        for (size_t i = 0; i < v->list_val->len; i++)
         {
-            value_free(v->list_val.items[i]);
+            value_free(v->list_val->items[i]);
         }
-        free(v->list_val.items);
+        free(v->list_val->items);
         break;
     case VALUE_DICT:
     {
@@ -251,7 +251,7 @@ double float_from_dict(Dict *dict, const char *key)
     return value_as_double(value);
 }
 
-List list_from_dict(Dict *dict, const char *key)
+List *list_from_dict(Dict *dict, const char *key)
 {
 
     Value *value = dict_get(dict, key);

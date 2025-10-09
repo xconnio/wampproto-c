@@ -28,18 +28,18 @@ static void hello_free(Message *self)
 
 static Dict *default_roles(void)
 {
-    Dict *roles = create_dict(2);
-    dict_insert(roles, "caller", value_from_dict(create_dict(1)));
-    dict_insert(roles, "publisher", value_from_dict(create_dict(1)));
-    dict_insert(roles, "subscriber", value_from_dict(create_dict(1)));
-    dict_insert(roles, "callee", value_from_dict(create_dict(1)));
+    Dict *roles = create_dict();
+    dict_insert(roles, "caller", value_from_dict(create_dict()));
+    dict_insert(roles, "publisher", value_from_dict(create_dict()));
+    dict_insert(roles, "subscriber", value_from_dict(create_dict()));
+    dict_insert(roles, "callee", value_from_dict(create_dict()));
 
     return roles;
 }
 
 Dict *create_hello_details(Hello *self)
 {
-    Dict *details = create_dict(10);
+    Dict *details = create_dict();
     dict_insert(details, "authid", value_str(self->authid));
     if (self->auth_extra && self->auth_extra->count > 0)
         dict_insert(details, "authextra", value_from_dict(self->auth_extra));
@@ -85,7 +85,7 @@ Message *hello_parse(const List *val)
     char *auth_id = str_from_dict(details, "authid");
     Dict *auth_extra = dict_from_dict(details, "authextra");
     Dict *roles = dict_from_dict(details, "roles");
-    List auth_methods = list_from_dict(details, "authmethods");
+    List *auth_methods = list_from_dict(details, "authmethods");
 
-    return (Message *)hello_new(realm, auth_id, auth_extra, roles, &auth_methods);
+    return (Message *)hello_new(realm, auth_id, auth_extra, roles, auth_methods);
 }

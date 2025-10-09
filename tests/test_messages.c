@@ -29,16 +29,16 @@ static int64_t session_id = 987432;
 static Message *create_hello_message(void)
 {
 
-    Dict *auth_extra = create_dict(1);
+    Dict *auth_extra = create_dict();
     dict_insert(auth_extra, "name", value_str(authid));
 
-    Dict *roles = create_dict(2);
+    Dict *roles = create_dict();
     dict_insert(roles, "callee", value_bool(1));
 
     Value *auth_methods = value_list(1);
     value_list_append(auth_methods, value_str("ticket"));
 
-    Hello *hello = hello_new(realm, authid, auth_extra, roles, &auth_methods->list_val);
+    Hello *hello = hello_new(realm, authid, auth_extra, roles, auth_methods->list_val);
 
     return (Message *)hello;
 }
@@ -56,15 +56,16 @@ void test_hello_message(void)
     assert(strcmp(hello->realm, realm) == 0);
 
     List *list = hello->authmethods;
-    printf("\nLENGTH: %ld\n", list->len);
     assert(list->len == 1);
     assert(strcmp(value_as_str(list->items[0]), authmethod) == 0);
 }
 
 static Message *create_welcome_message(void)
 {
-    Dict *details = create_dict(2);
-    dict_insert(details, "broker", value_bool(1));
+    Dict *details = create_dict();
+    Dict *roles = create_dict();
+    dict_insert(roles, "broker", value_bool(1));
+    dict_insert(details, "roles", value_from_dict(roles));
     dict_insert(details, "authmethod", value_str(authmethod));
 
     return (Message *)welcome_new(session_id, details);
@@ -83,4 +84,5 @@ void test_welcome_message(void)
     assert(welcome->session_id == session_id);
 
     assert(strcmp(welcome->authmethod, authmethod) == 0);
+    assert(int_from_dict(welcome->roles, "broker") == 1);
 }
