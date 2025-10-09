@@ -59,15 +59,12 @@ static cJSON *value_to_cjson(const Value *val)
     {
         cJSON *obj = cJSON_CreateObject();
         Dict *dict = val->dict_val;
-        for (size_t index = 0; index < dict->size; index++)
+        Entry *curr, *tmp;
+        HASH_ITER(hh, dict->table, curr, tmp)
         {
-            Entry *curr = dict->buckets[index];
-            while (curr)
-            {
-                cJSON_AddItemToObject(obj, curr->key, value_to_cjson(curr->value));
-                curr = curr->next;
-            }
+            cJSON_AddItemToObject(obj, curr->key, value_to_cjson(curr->value));
         }
+
         return obj;
     }
     default:

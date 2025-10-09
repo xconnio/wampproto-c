@@ -93,7 +93,7 @@ Value *create_value_from_list(List *list)
 Value *value_dict(void)
 {
     Value *v = value_alloc(VALUE_DICT);
-    v->dict_val = create_dict(100);
+    v->dict_val = create_dict();
     return v;
 }
 

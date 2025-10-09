@@ -3,7 +3,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <uthash.h>
 
+typedef struct Dict Dict;
 typedef struct Value Value;
 typedef struct Entry Entry;
 
@@ -23,16 +25,14 @@ typedef struct Entry
 {
     char *key;
     Value *value;
-    Entry *next;
-
+    UT_hash_handle hh;
 } Entry;
 
-typedef struct Dict
+struct Dict
 {
-    Entry **buckets;
-    size_t size;
+    Entry *table;
     size_t count;
-} Dict;
+};
 
 typedef struct
 {
