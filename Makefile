@@ -28,7 +28,7 @@ lint: build
 	cmake-lint CMakeLists.txt
 
 test: build
-	ctest --test-dir $(CMAKE_DIR) --output-on-failure
+	ctest --test-dir $(CMAKE_DIR) --output-on-failure -V
 
 clean:
 	rm -rf $(CMAKE_DIR)

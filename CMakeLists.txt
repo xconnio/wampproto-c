@@ -87,4 +87,8 @@ if(BUILD_TESTS)
   add_executable(test_authenticators tests/test_authenticators.c)
   target_link_libraries(test_authenticators PRIVATE wampproto)
   add_test(NAME test_authenticators COMMAND test_authenticators)
+
+  add_executable(test_messages tests/test_messages.c)
+  target_link_libraries(test_messages PRIVATE wampproto)
+  add_test(NAME test_messages COMMAND test_messages)
 endif()

@@ -99,6 +99,9 @@ Value *value_dict(void)
 
 Dict *value_as_dict(const Value *value)
 {
+    if (!value || value->type != VALUE_DICT)
+        return NULL;
+
     return value->dict_val;
 }
 
@@ -218,4 +221,51 @@ void value_free(Value *v)
         break;
     }
     free(v);
+}
+
+int64_t int_from_dict(Dict *dict, const char *key)
+{
+    Value *value = dict_get(dict, key);
+    if (value == NULL)
+        return 0;
+
+    return value_as_int(value);
+}
+
+char *str_from_dict(Dict *dict, const char *key)
+{
+    Value *value = dict_get(dict, key);
+    if (value == NULL)
+        return "";
+
+    return value_as_str(value);
+}
+
+double float_from_dict(Dict *dict, const char *key)
+{
+
+    Value *value = dict_get(dict, key);
+    if (value == NULL)
+        return 0.0;
+
+    return value_as_double(value);
+}
+
+List list_from_dict(Dict *dict, const char *key)
+{
+
+    Value *value = dict_get(dict, key);
+    if (value == NULL)
+        value = value_list(0);
+
+    return value_as_list(value);
+}
+
+Dict *dict_from_dict(Dict *dict, const char *key)
+{
+    Value *value = dict_get(dict, key);
+    if (value == NULL)
+        return NULL;
+
+    return value_as_dict(value);
 }
