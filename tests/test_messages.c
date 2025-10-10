@@ -1,10 +1,12 @@
 #include "wampproto/dict.h"
 #include "wampproto/messages/abort.h"
 #include "wampproto/messages/call.h"
+#include "wampproto/messages/cancel.h"
 #include "wampproto/messages/error.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/welcome.h"
+#include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
 #include "wampproto/serializers/msgpack.h"
 #include "wampproto/serializers/serializer.h"
@@ -18,6 +20,7 @@ void test_hello_message(void);
 void test_welcome_message(void);
 void test_abort_messsage(void);
 void test_error_message(void);
+void test_cancel_message(void);
 
 int main(void)
 {
@@ -25,6 +28,7 @@ int main(void)
     test_welcome_message();
     test_abort_messsage();
     test_error_message();
+    test_cancel_message();
     return 0;
 }
 
@@ -165,4 +169,30 @@ void test_error_message(void)
     Value *v = error->args->items[0];
     assert(strcmp(value_as_str(v), error_args_message) == 0);
     assert(int_from_dict(error->kwargs, "severity") == error_severity_code);
+}
+
+// CANCEL Message Test
+
+static Message *create_cancel_message(void)
+{
+
+    Dict *options = create_dict();
+    dict_insert(options, "severity", value_int(error_severity_code));
+
+    return (Message *)cancel_new(request_id, options);
+}
+
+void test_cancel_message(void)
+{
+    Message *msg = create_cancel_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Cancel *cancel = (Cancel *)msg;
+
+    assert(cancel->request_id == request_id);
+    assert(int_from_dict(cancel->options, "severity") == error_severity_code);
 }

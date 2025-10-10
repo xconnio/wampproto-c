@@ -2,6 +2,7 @@
 #include "wampproto/messages/call.h"
 
 #include "wampproto/messages/authenticate.h"
+#include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
 #include "wampproto/messages/error.h"
 #include "wampproto/messages/hello.h"
@@ -27,6 +28,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_ABORT:
         return abort_parse(data);
+
+    case MESSAGE_TYPE_CANCEL:
+        return cancel_parse(data);
 
     case MESSAGE_TYPE_ERROR:
         return error_parse(data);
