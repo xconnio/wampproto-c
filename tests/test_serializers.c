@@ -39,7 +39,7 @@ const Message *create_authenticate_message(void)
     Value *s = value_str(salt);
     Value *i = value_int(10);
     Value *l = value_int(100);
-    Dict *dict = create_dict(10);
+    Dict *dict = create_dict();
 
     dict_insert(dict, "challenge", c);
     dict_insert(dict, "salt", s);

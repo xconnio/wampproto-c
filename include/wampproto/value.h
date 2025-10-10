@@ -55,7 +55,7 @@ typedef struct Value
         double float_val;
         int bool_val;
         char *str_val;
-        List list_val;
+        List *list_val;
         Dict *dict_val;
         Bytes bytes_val;
     };
@@ -82,6 +82,13 @@ int value_dict_append(Value *dict, const char *key, Value *val);
 
 Value *value_from_dict(Dict *dict);
 Value *value_from_list(const List *list);
+List *value_as_list(Value *value);
+
+int64_t int_from_dict(Dict *dict, const char *key);
+char *str_from_dict(Dict *dict, const char *key);
+double float_from_dict(Dict *dict, const char *key);
+List *list_from_dict(Dict *dict, const char *key);
+Dict *dict_from_dict(Dict *dict, const char *key);
 
 #define VALUE_FROM_INT(n) value_int((n))
 #define VALUE_FROM_FLOAT(x) value_float((x))

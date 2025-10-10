@@ -62,14 +62,14 @@ Message *call_parse(const List *val)
 
     List *args = NULL;
     if (val->len == 5)
-        args = &val->items[4]->list_val;
+        args = val->items[4]->list_val;
 
     Dict *kwargs = NULL;
     if (val->len == 6)
     {
         if (args == NULL)
         {
-            args = &val->items[4]->list_val;
+            args = val->items[4]->list_val;
         }
 
         kwargs = val->items[5]->dict_val;

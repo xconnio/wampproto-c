@@ -167,13 +167,13 @@ static int value_to_msgpack(msgpack_packer *pk, const Value *value)
 
     case VALUE_LIST:
     {
-        size_t n = value->list_val.len;
+        size_t n = value->list_val->len;
         int rc = msgpack_pack_array(pk, (uint32_t)n);
         if (rc != 0)
             return rc;
         for (size_t i = 0; i < n; ++i)
         {
-            rc = value_to_msgpack(pk, value->list_val.items[i]);
+            rc = value_to_msgpack(pk, value->list_val->items[i]);
             if (rc != 0)
                 return rc;
         }
@@ -301,13 +301,13 @@ static Message *msgpack_deserialize(const Serializer *self, Bytes data)
     if (!val)
         return NULL;
 
-    if (val->type != VALUE_LIST || val->list_val.len < 1)
+    if (val->type != VALUE_LIST || val->list_val->len < 1)
     {
         value_free(val);
         return NULL;
     }
 
-    Message *msg = to_message(&val->list_val);
+    Message *msg = to_message(val->list_val);
 
     free(val);
     return msg;
