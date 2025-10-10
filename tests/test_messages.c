@@ -3,6 +3,7 @@
 #include "wampproto/messages/call.h"
 #include "wampproto/messages/cancel.h"
 #include "wampproto/messages/error.h"
+#include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
@@ -23,6 +24,7 @@ void test_abort_messsage(void);
 void test_error_message(void);
 void test_cancel_message(void);
 void test_interrupt_message(void);
+void test_goodbye_message(void);
 
 int main(void)
 {
@@ -32,6 +34,7 @@ int main(void)
     test_error_message();
     test_cancel_message();
     test_interrupt_message();
+    test_goodbye_message();
     return 0;
 }
 
@@ -223,4 +226,32 @@ void test_interrupt_message(void)
 
     assert(interrupt->request_id == request_id);
     assert(int_from_dict(interrupt->options, "severity") == error_severity_code);
+}
+
+// GOODBYE Message Test
+
+static char *goodbye_message = "The host is shutting down now";
+static char *goodbye_uri = "wamp.close.system_shutdown";
+static Message *create_goodbye_message(void)
+{
+
+    Dict *details = create_dict();
+    dict_insert(details, "message", value_str(goodbye_message));
+
+    return (Message *)goodbye_new(details, goodbye_uri);
+}
+
+void test_goodbye_message(void)
+{
+    Message *msg = create_goodbye_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Goodbye *goodbye = (Goodbye *)msg;
+
+    assert(strcmp(goodbye->uri, goodbye_uri) == 0);
+    assert(strcmp(str_from_dict(goodbye->details, "message"), goodbye_message) == 0);
 }

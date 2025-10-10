@@ -58,6 +58,9 @@ Error *error_new(int64_t message_type, int64_t request_id, Dict *details, char *
 
 Message *error_parse(const List *val)
 {
+    if (!val || val->len < 5)
+        return NULL;
+
     int64_t message_type = value_as_int(val->items[1]);
     int64_t request_id = value_as_int(val->items[2]);
     Dict *details = value_as_dict(val->items[3]);

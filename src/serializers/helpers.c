@@ -5,6 +5,7 @@
 #include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
 #include "wampproto/messages/error.h"
+#include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
@@ -35,6 +36,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_INTERRUPT:
         return interrupt_parse(data);
+
+    case MESSAGE_TYPE_GOODBYE:
+        return goodbye_parse(data);
 
     case MESSAGE_TYPE_ERROR:
         return error_parse(data);

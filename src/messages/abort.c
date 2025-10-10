@@ -55,6 +55,9 @@ Abort *abort_new(Dict *details, char *reason, List *args, Dict *kwargs)
 Message *abort_parse(const List *val)
 {
 
+    if (!val || val->len < 3)
+        return NULL;
+
     Dict *details = value_as_dict(val->items[1]);
     char *reason = value_as_str(val->items[2]);
     List *args = NULL;
