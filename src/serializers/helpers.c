@@ -1,8 +1,13 @@
+#include "wampproto/messages/abort.h"
 #include "wampproto/messages/call.h"
 
 #include "wampproto/messages/authenticate.h"
+#include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
+#include "wampproto/messages/error.h"
+#include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
+#include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/welcome.h"
@@ -22,6 +27,21 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_WELCOME:
         return welcome_parse(data);
+
+    case MESSAGE_TYPE_ABORT:
+        return abort_parse(data);
+
+    case MESSAGE_TYPE_CANCEL:
+        return cancel_parse(data);
+
+    case MESSAGE_TYPE_INTERRUPT:
+        return interrupt_parse(data);
+
+    case MESSAGE_TYPE_GOODBYE:
+        return goodbye_parse(data);
+
+    case MESSAGE_TYPE_ERROR:
+        return error_parse(data);
 
     case MESSAGE_TYPE_REGISTERED:
         return registered_parse(data);
