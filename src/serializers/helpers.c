@@ -1,3 +1,4 @@
+#include "wampproto/messages/abort.h"
 #include "wampproto/messages/call.h"
 
 #include "wampproto/messages/authenticate.h"
@@ -22,6 +23,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_WELCOME:
         return welcome_parse(data);
+
+    case MESSAGE_TYPE_ABORT:
+        return abort_parse(data);
 
     case MESSAGE_TYPE_REGISTERED:
         return registered_parse(data);

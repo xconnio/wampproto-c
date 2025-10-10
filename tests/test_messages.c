@@ -1,4 +1,5 @@
 #include "wampproto/dict.h"
+#include "wampproto/messages/abort.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/welcome.h"
@@ -13,11 +14,13 @@
 
 void test_hello_message(void);
 void test_welcome_message(void);
+void test_abort_messsage(void);
 
 int main(void)
 {
     test_hello_message();
     test_welcome_message();
+    test_abort_messsage();
     return 0;
 }
 
@@ -85,4 +88,36 @@ void test_welcome_message(void)
 
     assert(strcmp(welcome->authmethod, authmethod) == 0);
     assert(int_from_dict(welcome->roles, "broker") == 1);
+}
+
+// ABORT Message Test
+static char *abort_message = "The realm does not exist.";
+static char *abort_reason = "wamp.error.no_such_realm";
+static int64_t abort_kwarg_user_id = 63;
+static Message *create_abort_message(void)
+{
+    Dict *details = create_dict();
+    dict_insert(details, "message", value_str(abort_message));
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "user_id", value_int(abort_kwarg_user_id));
+
+    return (Message *)abort_new(details, abort_reason, NULL, kwargs);
+}
+
+void test_abort_messsage(void)
+{
+
+    Message *msg = create_abort_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Abort *abort = (Abort *)msg;
+
+    assert(strcmp(abort->reason, abort_reason) == 0);
+    assert(strcmp(str_from_dict(abort->details, "message"), abort_message) == 0);
+    assert(int_from_dict(abort->kwargs, "user_id") == abort_kwarg_user_id);
+    assert(abort->args->len == 0);
 }
