@@ -1,5 +1,7 @@
 #include "wampproto/dict.h"
 #include "wampproto/messages/abort.h"
+#include "wampproto/messages/call.h"
+#include "wampproto/messages/error.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/welcome.h"
@@ -15,12 +17,14 @@
 void test_hello_message(void);
 void test_welcome_message(void);
 void test_abort_messsage(void);
+void test_error_message(void);
 
 int main(void)
 {
     test_hello_message();
     test_welcome_message();
     test_abort_messsage();
+    test_error_message();
     return 0;
 }
 
@@ -120,4 +124,45 @@ void test_abort_messsage(void)
     assert(strcmp(str_from_dict(abort->details, "message"), abort_message) == 0);
     assert(int_from_dict(abort->kwargs, "user_id") == abort_kwarg_user_id);
     assert(abort->args->len == 0);
+}
+
+// ERROR Message Test
+
+static int64_t request_id = 12;
+static char *error_uri = "com.myapp.error.object_write_protected";
+static char *error_args_message = "Object is write protected.";
+static int64_t error_severity_code = 3;
+static Message *create_error_message(void)
+{
+    int64_t message_type = MESSAGE_TYPE_CALL;
+    Dict *details = create_dict();
+    Value *args = value_list(1);
+    value_list_append(args, value_str(error_args_message));
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "severity", value_int(error_severity_code));
+
+    return (Message *)error_new(message_type, request_id, details, error_uri, value_as_list(args),
+                                kwargs);
+}
+
+void test_error_message(void)
+{
+    Message *msg = create_error_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Error *error = (Error *)msg;
+
+    assert(error->message_type == MESSAGE_TYPE_CALL);
+    assert(error->request_id == request_id);
+    assert(strcmp(error->uri, error_uri) == 0);
+
+    assert(error->args->len == 1);
+
+    Value *v = error->args->items[0];
+    assert(strcmp(value_as_str(v), error_args_message) == 0);
+    assert(int_from_dict(error->kwargs, "severity") == error_severity_code);
 }

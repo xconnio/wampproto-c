@@ -3,6 +3,7 @@
 
 #include "wampproto/messages/authenticate.h"
 #include "wampproto/messages/challenge.h"
+#include "wampproto/messages/error.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/registered.h"
@@ -26,6 +27,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_ABORT:
         return abort_parse(data);
+
+    case MESSAGE_TYPE_ERROR:
+        return error_parse(data);
 
     case MESSAGE_TYPE_REGISTERED:
         return registered_parse(data);
