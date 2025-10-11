@@ -8,13 +8,13 @@
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
+#include "wampproto/messages/unregister.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
 #include "wampproto/serializers/msgpack.h"
 #include "wampproto/serializers/serializer.h"
 #include "wampproto/value.h"
-#include <arm/types.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +28,7 @@ void test_cancel_message(void);
 void test_interrupt_message(void);
 void test_goodbye_message(void);
 void test_register_message(void);
+void test_unregister_message(void);
 
 int main(void)
 {
@@ -41,6 +42,7 @@ int main(void)
     test_goodbye_message();
 
     test_register_message();
+    test_unregister_message();
     return 0;
 }
 
@@ -288,4 +290,28 @@ void test_register_message(void)
     assert(strcmp(r->uri, register_uri) == 0);
     assert(r->request_id == request_id);
     assert(strcmp(str_from_dict(r->options, "uri"), register_uri) == 0);
+}
+
+// UNREGISTER Message Test
+static int64_t registration_id = 98765;
+static Message *create_unregister_message(void)
+{
+
+    return (Message *)unregister_new(request_id, registration_id);
+}
+
+void test_unregister_message(void)
+{
+    Message *msg = create_unregister_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    printf("\n%s\n", bytes.data);
+    assert(msg != NULL);
+
+    Unregister *unregister = (Unregister *)msg;
+
+    assert(unregister->request_id == request_id);
+    assert(unregister->registration_id == registration_id);
 }
