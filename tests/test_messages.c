@@ -7,6 +7,9 @@
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
+#include "wampproto/messages/register.h"
+#include "wampproto/messages/unregister.h"
+#include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
@@ -25,16 +28,24 @@ void test_error_message(void);
 void test_cancel_message(void);
 void test_interrupt_message(void);
 void test_goodbye_message(void);
+void test_register_message(void);
+void test_unregister_message(void);
+void test_unregistered_message(void);
 
 int main(void)
 {
     test_hello_message();
     test_welcome_message();
+
     test_abort_messsage();
     test_error_message();
     test_cancel_message();
     test_interrupt_message();
     test_goodbye_message();
+
+    test_register_message();
+    test_unregister_message();
+    test_unregistered_message();
     return 0;
 }
 
@@ -254,4 +265,76 @@ void test_goodbye_message(void)
 
     assert(strcmp(goodbye->uri, goodbye_uri) == 0);
     assert(strcmp(str_from_dict(goodbye->details, "message"), goodbye_message) == 0);
+}
+
+// REGISTER Message Test
+
+static char *register_uri = "xconn.io.example";
+static Message *create_register_message(void)
+{
+    Dict *options = create_dict();
+    dict_insert(options, "uri", value_str(register_uri));
+
+    return (Message *)register_new(request_id, options, register_uri);
+}
+
+void test_register_message(void)
+{
+    Message *msg = create_register_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Register *r = (Register *)msg;
+
+    assert(strcmp(r->uri, register_uri) == 0);
+    assert(r->request_id == request_id);
+    assert(strcmp(str_from_dict(r->options, "uri"), register_uri) == 0);
+}
+
+// UNREGISTER Message Test
+static int64_t registration_id = 98765;
+static Message *create_unregister_message(void)
+{
+
+    return (Message *)unregister_new(request_id, registration_id);
+}
+
+void test_unregister_message(void)
+{
+    Message *msg = create_unregister_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unregister *unregister = (Unregister *)msg;
+
+    assert(unregister->request_id == request_id);
+    assert(unregister->registration_id == registration_id);
+}
+
+// UNREGISTERED Message Test
+
+Message *create_unregistered_message(void)
+{
+
+    return (Message *)unregistered_new(request_id);
+}
+
+void test_unregistered_message(void)
+{
+    Message *msg = create_unregistered_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unregistered *unregistered = (Unregistered *)msg;
+
+    assert(unregistered->request_id == request_id);
 }
