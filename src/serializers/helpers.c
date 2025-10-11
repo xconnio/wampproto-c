@@ -12,6 +12,7 @@
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/unregister.h"
+#include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/value.h"
 #include <stdio.h>
@@ -53,6 +54,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_REGISTERED:
         return registered_parse(data);
+
+    case MESSAGE_TYPE_UNREGISTERED:
+        return unregistered_parse(data);
 
     case MESSAGE_TYPE_CALL:
         return call_parse(data);

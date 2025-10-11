@@ -9,6 +9,7 @@
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/unregister.h"
+#include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
@@ -29,6 +30,7 @@ void test_interrupt_message(void);
 void test_goodbye_message(void);
 void test_register_message(void);
 void test_unregister_message(void);
+void test_unregistered_message(void);
 
 int main(void)
 {
@@ -43,6 +45,7 @@ int main(void)
 
     test_register_message();
     test_unregister_message();
+    test_unregistered_message();
     return 0;
 }
 
@@ -282,7 +285,6 @@ void test_register_message(void)
     Bytes bytes = serializer->serialize(serializer, msg);
     msg = serializer->deserialize(serializer, bytes);
 
-    printf("\n%s\n", bytes.data);
     assert(msg != NULL);
 
     Register *r = (Register *)msg;
@@ -307,11 +309,32 @@ void test_unregister_message(void)
     Bytes bytes = serializer->serialize(serializer, msg);
     msg = serializer->deserialize(serializer, bytes);
 
-    printf("\n%s\n", bytes.data);
     assert(msg != NULL);
 
     Unregister *unregister = (Unregister *)msg;
 
     assert(unregister->request_id == request_id);
     assert(unregister->registration_id == registration_id);
+}
+
+// UNREGISTERED Message Test
+
+Message *create_unregistered_message(void)
+{
+
+    return (Message *)unregistered_new(request_id);
+}
+
+void test_unregistered_message(void)
+{
+    Message *msg = create_unregistered_message();
+    Serializer *serializer = json_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unregistered *unregistered = (Unregistered *)msg;
+
+    assert(unregistered->request_id == request_id);
 }
