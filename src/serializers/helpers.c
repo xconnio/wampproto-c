@@ -9,6 +9,7 @@
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/message.h"
+#include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/value.h"
@@ -42,6 +43,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_ERROR:
         return error_parse(data);
+
+    case MESSAGE_TYPE_REGISTER:
+        return register_parse(data);
 
     case MESSAGE_TYPE_REGISTERED:
         return registered_parse(data);
