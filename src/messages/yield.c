@@ -23,7 +23,7 @@ static List *yield_marshal(const Message *self)
     if (yield->kwargs != NULL)
     {
         if (yield->args == NULL)
-            value_list_append(list, value_from_list(yield->args));
+            value_list_append(list, value_list(0));
 
         value_list_append(list, value_from_dict(yield->kwargs));
     }

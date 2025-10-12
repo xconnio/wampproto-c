@@ -9,6 +9,7 @@
 #include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
+#include "wampproto/messages/result.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
@@ -36,6 +37,7 @@ void test_unregister_message(void);
 void test_unregistered_message(void);
 void test_invocation_message(void);
 void test_yield_message(void);
+void test_result_message(void);
 
 int main(void)
 {
@@ -54,6 +56,7 @@ int main(void)
 
     test_invocation_message();
     test_yield_message();
+    test_result_message();
 
     return 0;
 }
@@ -439,4 +442,43 @@ void test_yield_message(void)
     assert(value_as_int(list->items[0]) == request_id);
 
     assert(strcmp(str_from_dict(yield->kwargs, "message_type"), yield_message_type) == 0);
+}
+
+// RESULT Message Test
+
+Message *create_result_message(void)
+{
+
+    Dict *details = create_dict();
+    dict_insert(details, "request_id", value_int(request_id));
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "userId", value_int(request_id));
+    dict_insert(kwargs, "message_type", value_str(yield_message_type));
+
+    return (Message *)result_new(request_id, details, value_as_list(args), kwargs);
+}
+
+void test_result_message(void)
+{
+    Message *msg = create_result_message();
+    Serializer *cbor = cbor_serializer_new();
+    Bytes bytes = cbor->serialize(cbor, msg);
+    msg = cbor->deserialize(cbor, bytes);
+
+    assert(msg != NULL);
+
+    Result *result = (Result *)msg;
+
+    assert(result->request_id == request_id);
+    assert(int_from_dict(result->details, "request_id") == request_id);
+
+    List *list = result->args;
+    assert(list->len == 1);
+    assert(value_as_int(list->items[0]) == request_id);
+
+    assert(strcmp(str_from_dict(result->kwargs, "message_type"), yield_message_type) == 0);
 }
