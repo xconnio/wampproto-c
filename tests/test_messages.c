@@ -6,6 +6,7 @@
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
+#include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/unregister.h"
@@ -17,6 +18,7 @@
 #include "wampproto/serializers/serializer.h"
 #include "wampproto/value.h"
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +33,7 @@ void test_goodbye_message(void);
 void test_register_message(void);
 void test_unregister_message(void);
 void test_unregistered_message(void);
+void test_invocation_message(void);
 
 int main(void)
 {
@@ -46,6 +49,7 @@ int main(void)
     test_register_message();
     test_unregister_message();
     test_unregistered_message();
+    test_invocation_message();
     return 0;
 }
 
@@ -337,4 +341,58 @@ void test_unregistered_message(void)
     Unregistered *unregistered = (Unregistered *)msg;
 
     assert(unregistered->request_id == request_id);
+}
+
+// INVOCATION Message Test
+
+static Message *create_invocation_message(void)
+{
+
+    // CBOR was buggy and so wrote a complex array structure to know if it passes the process
+    Dict *details = create_dict();
+
+    Dict *unknown = create_dict();
+    dict_insert(unknown, "key", value_str("Nesting started"));
+    Value *list = value_list(2);
+    Value *sub_list = value_list(1);
+    value_list_append(sub_list, value_int(123444));
+    value_list_append(list, sub_list);
+    value_list_append(list, value_from_dict(unknown));
+
+    dict_insert(details, "unknown", value_str("Hello"));
+    dict_insert(details, "extreme", list);
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "request_id", value_int(request_id));
+
+    return (Message *)invocation_new(request_id, registration_id, details, value_as_list(args),
+                                     kwargs);
+}
+
+void test_invocation_message(void)
+{
+    Message *msg = create_invocation_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    Serializer *json = json_serializer_new();
+    bytes = json->serialize(json, msg);
+
+    msg = json->deserialize(json, bytes);
+
+    assert(msg != NULL);
+
+    Invocation *invocation = (Invocation *)msg;
+
+    assert(invocation->request_id = request_id);
+    assert(invocation->registration_id = registration_id);
+
+    assert(int_from_dict(invocation->kwargs, "request_id") == request_id);
+    assert(invocation->args->len == 1);
+    assert(value_as_int(invocation->args->items[0]) == request_id);
 }

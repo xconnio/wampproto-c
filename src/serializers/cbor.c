@@ -22,24 +22,28 @@ static Value *cbor_value_to_value(CborValue *it)
 {
     if (cbor_value_is_null(it))
     {
+        cbor_value_advance(it);
         return value_null();
     }
     if (cbor_value_is_boolean(it))
     {
         bool val;
         cbor_value_get_boolean(it, &val);
+        cbor_value_advance(it);
         return value_bool(val);
     }
     if (cbor_value_is_integer(it))
     {
         int64_t val;
         cbor_value_get_int64(it, &val);
+        cbor_value_advance(it);
         return value_int(val);
     }
     if (cbor_value_is_double(it))
     {
         double val;
         cbor_value_get_double(it, &val);
+        cbor_value_advance(it);
         return value_float(val);
     }
     if (cbor_value_is_text_string(it))
@@ -51,6 +55,7 @@ static Value *cbor_value_to_value(CborValue *it)
         str[len] = '\0';
         Value *result = value_str(str);
         free(str);
+        cbor_value_advance(it);
         return result;
     }
     if (cbor_value_is_byte_string(it))
@@ -61,6 +66,7 @@ static Value *cbor_value_to_value(CborValue *it)
         cbor_value_copy_byte_string(it, bytes, &len, NULL);
         Value *result = value_bytes(bytes, len);
         free(bytes);
+        cbor_value_advance(it);
         return result;
     }
     if (cbor_value_is_array(it))
@@ -76,11 +82,7 @@ static Value *cbor_value_to_value(CborValue *it)
         {
             Value *item = cbor_value_to_value(&arrayIt);
             if (item)
-            {
                 value_list_append(arr, item);
-            }
-            if (item->type != VALUE_DICT)
-                cbor_value_advance(&arrayIt);
         }
 
         cbor_value_leave_container(it, &arrayIt);
@@ -114,10 +116,7 @@ static Value *cbor_value_to_value(CborValue *it)
             {
                 Value *val = cbor_value_to_value(&mapIt);
                 if (val)
-                {
                     dict_insert(dict->dict_val, key, val);
-                }
-                cbor_value_advance(&mapIt);
             }
 
             free(key);

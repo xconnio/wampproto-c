@@ -76,7 +76,7 @@ void dict_remove(Dict *dict, const char *key)
 
 void dict_free(Dict *dict)
 {
-    if (!dict)
+    if (!dict || dict->count == 0)
         return;
 
     Entry *curr, *tmp;
