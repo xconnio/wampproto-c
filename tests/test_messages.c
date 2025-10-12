@@ -6,17 +6,21 @@
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
+#include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
+#include "wampproto/messages/result.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
+#include "wampproto/messages/yield.h"
 #include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
 #include "wampproto/serializers/msgpack.h"
 #include "wampproto/serializers/serializer.h"
 #include "wampproto/value.h"
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +35,9 @@ void test_goodbye_message(void);
 void test_register_message(void);
 void test_unregister_message(void);
 void test_unregistered_message(void);
+void test_invocation_message(void);
+void test_yield_message(void);
+void test_result_message(void);
 
 int main(void)
 {
@@ -46,6 +53,11 @@ int main(void)
     test_register_message();
     test_unregister_message();
     test_unregistered_message();
+
+    test_invocation_message();
+    test_yield_message();
+    test_result_message();
+
     return 0;
 }
 
@@ -337,4 +349,136 @@ void test_unregistered_message(void)
     Unregistered *unregistered = (Unregistered *)msg;
 
     assert(unregistered->request_id == request_id);
+}
+
+// INVOCATION Message Test
+
+static Message *create_invocation_message(void)
+{
+
+    // CBOR was buggy and so wrote a complex array structure to know if it passes the process
+    Dict *details = create_dict();
+
+    Dict *unknown = create_dict();
+    dict_insert(unknown, "key", value_str("Nesting started"));
+    Value *list = value_list(2);
+    Value *sub_list = value_list(1);
+    value_list_append(sub_list, value_int(123444));
+    value_list_append(list, sub_list);
+    value_list_append(list, value_from_dict(unknown));
+
+    dict_insert(details, "unknown", value_str("Hello"));
+    dict_insert(details, "extreme", list);
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "request_id", value_int(request_id));
+
+    return (Message *)invocation_new(request_id, registration_id, details, value_as_list(args),
+                                     kwargs);
+}
+
+void test_invocation_message(void)
+{
+    Message *msg = create_invocation_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    Serializer *json = json_serializer_new();
+    bytes = json->serialize(json, msg);
+
+    msg = json->deserialize(json, bytes);
+
+    assert(msg != NULL);
+
+    Invocation *invocation = (Invocation *)msg;
+
+    assert(invocation->request_id = request_id);
+    assert(invocation->registration_id = registration_id);
+
+    assert(int_from_dict(invocation->kwargs, "request_id") == request_id);
+    assert(invocation->args->len == 1);
+    assert(value_as_int(invocation->args->items[0]) == request_id);
+}
+
+// YIELD Message Test
+
+static char *yield_message_type = "yield";
+Message *create_yield_message(void)
+{
+
+    Dict *options = create_dict();
+    dict_insert(options, "request_id", value_int(request_id));
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "userId", value_int(request_id));
+    dict_insert(kwargs, "message_type", value_str(yield_message_type));
+
+    return (Message *)yield_new(request_id, options, value_as_list(args), kwargs);
+}
+
+void test_yield_message(void)
+{
+    Message *msg = create_yield_message();
+    Serializer *cbor = cbor_serializer_new();
+    Bytes bytes = cbor->serialize(cbor, msg);
+    msg = cbor->deserialize(cbor, bytes);
+
+    assert(msg != NULL);
+
+    Yield *yield = (Yield *)msg;
+
+    assert(yield->request_id == request_id);
+    assert(int_from_dict(yield->options, "request_id") == request_id);
+
+    List *list = yield->args;
+    assert(value_as_int(list->items[0]) == request_id);
+
+    assert(strcmp(str_from_dict(yield->kwargs, "message_type"), yield_message_type) == 0);
+}
+
+// RESULT Message Test
+
+Message *create_result_message(void)
+{
+
+    Dict *details = create_dict();
+    dict_insert(details, "request_id", value_int(request_id));
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "userId", value_int(request_id));
+    dict_insert(kwargs, "message_type", value_str(yield_message_type));
+
+    return (Message *)result_new(request_id, details, value_as_list(args), kwargs);
+}
+
+void test_result_message(void)
+{
+    Message *msg = create_result_message();
+    Serializer *cbor = cbor_serializer_new();
+    Bytes bytes = cbor->serialize(cbor, msg);
+    msg = cbor->deserialize(cbor, bytes);
+
+    assert(msg != NULL);
+
+    Result *result = (Result *)msg;
+
+    assert(result->request_id == request_id);
+    assert(int_from_dict(result->details, "request_id") == request_id);
+
+    List *list = result->args;
+    assert(list->len == 1);
+    assert(value_as_int(list->items[0]) == request_id);
+
+    assert(strcmp(str_from_dict(result->kwargs, "message_type"), yield_message_type) == 0);
 }

@@ -8,12 +8,15 @@
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
+#include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
+#include "wampproto/messages/result.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
+#include "wampproto/messages/yield.h"
 #include "wampproto/value.h"
 #include <stdio.h>
 
@@ -60,6 +63,15 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_CALL:
         return call_parse(data);
+
+    case MESSAGE_TYPE_INVOCATION:
+        return invocation_parse(data);
+
+    case MESSAGE_TYPE_YIELD:
+        return yield_parse(data);
+
+    case MESSAGE_TYPE_RESULT:
+        return result_parse(data);
 
     case MESSAGE_TYPE_CHALLENGE:
         return challenge_parse(data);
