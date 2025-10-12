@@ -25,7 +25,12 @@ static List *call_marshal(const Message *self)
         value_list_append(v, value_from_list(r->args));
 
     if (r->kwargs != NULL)
+    {
+        if (r->args == NULL)
+            value_list_append(v, value_list(0));
+
         value_list_append(v, value_from_dict(r->kwargs));
+    }
 
     return (List *)v;
 }
