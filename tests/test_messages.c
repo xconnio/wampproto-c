@@ -12,6 +12,7 @@
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
+#include "wampproto/messages/yield.h"
 #include "wampproto/serializers/cbor.h"
 #include "wampproto/serializers/json.h"
 #include "wampproto/serializers/msgpack.h"
@@ -34,6 +35,7 @@ void test_register_message(void);
 void test_unregister_message(void);
 void test_unregistered_message(void);
 void test_invocation_message(void);
+void test_yield_message(void);
 
 int main(void)
 {
@@ -49,7 +51,10 @@ int main(void)
     test_register_message();
     test_unregister_message();
     test_unregistered_message();
+
     test_invocation_message();
+    test_yield_message();
+
     return 0;
 }
 
@@ -395,4 +400,43 @@ void test_invocation_message(void)
     assert(int_from_dict(invocation->kwargs, "request_id") == request_id);
     assert(invocation->args->len == 1);
     assert(value_as_int(invocation->args->items[0]) == request_id);
+}
+
+// YIELD Message Test
+
+static char *yield_message_type = "yield";
+Message *create_yield_message(void)
+{
+
+    Dict *options = create_dict();
+    dict_insert(options, "request_id", value_int(request_id));
+
+    Value *args = value_list(1);
+    value_list_append(args, value_int(request_id));
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "userId", value_int(request_id));
+    dict_insert(kwargs, "message_type", value_str(yield_message_type));
+
+    return (Message *)yield_new(request_id, options, value_as_list(args), kwargs);
+}
+
+void test_yield_message(void)
+{
+    Message *msg = create_yield_message();
+    Serializer *cbor = cbor_serializer_new();
+    Bytes bytes = cbor->serialize(cbor, msg);
+    msg = cbor->deserialize(cbor, bytes);
+
+    assert(msg != NULL);
+
+    Yield *yield = (Yield *)msg;
+
+    assert(yield->request_id == request_id);
+    assert(int_from_dict(yield->options, "request_id") == request_id);
+
+    List *list = yield->args;
+    assert(value_as_int(list->items[0]) == request_id);
+
+    assert(strcmp(str_from_dict(yield->kwargs, "message_type"), yield_message_type) == 0);
 }

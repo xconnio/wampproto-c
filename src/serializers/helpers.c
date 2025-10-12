@@ -15,6 +15,7 @@
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
+#include "wampproto/messages/yield.h"
 #include "wampproto/value.h"
 #include <stdio.h>
 
@@ -64,6 +65,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_INVOCATION:
         return invocation_parse(data);
+
+    case MESSAGE_TYPE_YIELD:
+        return yield_parse(data);
 
     case MESSAGE_TYPE_CHALLENGE:
         return challenge_parse(data);
