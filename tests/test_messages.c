@@ -19,6 +19,7 @@
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/result.h"
 #include "wampproto/messages/subscribe.h"
+#include "wampproto/messages/subscribed.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
@@ -48,6 +49,7 @@ void test_published_message(void);
 void test_event_message(void);
 
 void test_subscribe_message(void);
+void test_subscribed_message(void);
 
 int main(void) {
     test_hello_message();
@@ -67,11 +69,12 @@ int main(void) {
     test_yield_message();
     test_result_message();
 
-    test_subscribe_message();
-
     test_publish_message();
     test_published_message();
     test_event_message();
+
+    test_subscribe_message();
+    test_subscribed_message();
 
     return 0;
 }
@@ -583,4 +586,22 @@ void test_subscribe_message(void) {
 
     assert(subscribe->request_id == request_id);
     assert(strcmp(subscribe->uri, publish_uri) == 0);
+}
+
+Message* create_subscribed_message(void) { return (Message*)subscribed_new(request_id, subscription_id); }
+
+void test_subscribed_message(void) {
+    Message* msg = create_subscribed_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Subscribed* subscribed = (Subscribed*)msg;
+
+    assert(subscribed->request_id == request_id);
+    assert(subscribed->subscription_id == subscription_id);
 }
