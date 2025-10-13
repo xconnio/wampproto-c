@@ -8,6 +8,7 @@
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
+#include "wampproto/messages/publish.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/result.h"
 #include "wampproto/messages/unregister.h"
@@ -39,6 +40,8 @@ void test_invocation_message(void);
 void test_yield_message(void);
 void test_result_message(void);
 
+void test_publish_message(void);
+
 int main(void)
 {
     test_hello_message();
@@ -57,6 +60,8 @@ int main(void)
     test_invocation_message();
     test_yield_message();
     test_result_message();
+
+    test_publish_message();
 
     return 0;
 }
@@ -481,4 +486,49 @@ void test_result_message(void)
     assert(value_as_int(list->items[0]) == request_id);
 
     assert(strcmp(str_from_dict(result->kwargs, "message_type"), yield_message_type) == 0);
+}
+
+// PUBLISH Message Test
+
+static char *publish_uri = "xconn.io.sample";
+Message *create_publish_message(void)
+{
+    Dict *options = create_dict();
+
+    Value *args_value = value_list(1);
+    value_list_append(args_value, value_str(publish_uri));
+    List *args = value_as_list(args_value);
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "color", value_str("orange"));
+
+    Value *sizes_value = value_list(3);
+    value_list_append(sizes_value, value_int(1));
+    value_list_append(sizes_value, value_int(2));
+    value_list_append(sizes_value, value_int(3));
+
+    dict_insert(kwargs, "sizes", sizes_value);
+
+    return (Message *)publish_new(request_id, options, publish_uri, args, kwargs);
+}
+
+void test_publish_message(void)
+{
+    Message *msg = create_publish_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Publish *publish = (Publish *)msg;
+
+    assert(publish->request_id == request_id);
+    assert(strcmp(publish->uri, publish_uri) == 0);
+
+    assert(publish->args->len == 1);
+    List *sizes = list_from_dict(publish->kwargs, "sizes");
+
+    assert(sizes->len == 3);
 }
