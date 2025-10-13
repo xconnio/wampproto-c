@@ -21,6 +21,7 @@
 #include "wampproto/messages/subscribed.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
+#include "wampproto/messages/unsubscribe.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/messages/yield.h"
 #include "wampproto/value.h"
@@ -88,6 +89,9 @@ Message* to_message(const List* data) {
 
         case MESSAGE_TYPE_SUBSCRIBED:
             return subscribed_parse(data);
+
+        case MESSAGE_TYPE_UNSUBSCRIBE:
+            return unsubscribe_parse(data);
 
         case MESSAGE_TYPE_CHALLENGE:
             return challenge_parse(data);

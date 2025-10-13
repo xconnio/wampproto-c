@@ -22,6 +22,7 @@
 #include "wampproto/messages/subscribed.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
+#include "wampproto/messages/unsubscribe.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/messages/yield.h"
 #include "wampproto/serializers/cbor.h"
@@ -50,6 +51,7 @@ void test_event_message(void);
 
 void test_subscribe_message(void);
 void test_subscribed_message(void);
+void test_unsubscribe_message(void);
 
 int main(void) {
     test_hello_message();
@@ -75,6 +77,7 @@ int main(void) {
 
     test_subscribe_message();
     test_subscribed_message();
+    test_unsubscribe_message();
 
     return 0;
 }
@@ -588,6 +591,8 @@ void test_subscribe_message(void) {
     assert(strcmp(subscribe->uri, publish_uri) == 0);
 }
 
+// UNSUBSCRIBE Message Test
+
 Message* create_subscribed_message(void) { return (Message*)subscribed_new(request_id, subscription_id); }
 
 void test_subscribed_message(void) {
@@ -604,4 +609,22 @@ void test_subscribed_message(void) {
 
     assert(subscribed->request_id == request_id);
     assert(subscribed->subscription_id == subscription_id);
+}
+
+Message* create_unsubscribe_message(void) { return (Message*)unsubscribe_new(request_id, subscription_id); }
+
+void test_unsubscribe_message(void) {
+    Message* msg = create_unsubscribe_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unsubscribe* unsubscribe = (Unsubscribe*)msg;
+
+    assert(unsubscribe->request_id == request_id);
+    assert(unsubscribe->subscription_id == subscription_id);
 }
