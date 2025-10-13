@@ -5,11 +5,14 @@
 #include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
 #include "wampproto/messages/error.h"
+#include "wampproto/messages/event.h"
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
 #include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
+#include "wampproto/messages/publish.h"
+#include "wampproto/messages/published.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/result.h"
@@ -72,6 +75,15 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_RESULT:
         return result_parse(data);
+
+    case MESSAGE_TYPE_PUBLISH:
+        return publish_parse(data);
+
+    case MESSAGE_TYPE_PUBLISHED:
+        return published_parse(data);
+
+    case MESSAGE_TYPE_EVENT:
+        return event_parse(data);
 
     case MESSAGE_TYPE_CHALLENGE:
         return challenge_parse(data);
