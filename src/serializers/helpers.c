@@ -17,6 +17,7 @@
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/result.h"
+#include "wampproto/messages/subscribe.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
@@ -80,6 +81,9 @@ Message* to_message(const List* data) {
 
         case MESSAGE_TYPE_EVENT:
             return event_parse(data);
+
+        case MESSAGE_TYPE_SUBSCRIBE:
+            return subscribe_parse(data);
 
         case MESSAGE_TYPE_CHALLENGE:
             return challenge_parse(data);

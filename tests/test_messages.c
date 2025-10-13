@@ -18,6 +18,7 @@
 #include "wampproto/messages/published.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/result.h"
+#include "wampproto/messages/subscribe.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/welcome.h"
@@ -46,6 +47,8 @@ void test_publish_message(void);
 void test_published_message(void);
 void test_event_message(void);
 
+void test_subscribe_message(void);
+
 int main(void) {
     test_hello_message();
     test_welcome_message();
@@ -63,6 +66,8 @@ int main(void) {
     test_invocation_message();
     test_yield_message();
     test_result_message();
+
+    test_subscribe_message();
 
     test_publish_message();
     test_published_message();
@@ -533,7 +538,6 @@ Message* create_event_message(void) {
     value_list_append(sizes_value, value_int(3));
 
     dict_insert(kwargs, "sizes", sizes_value);
-
     return (Message*)event_new(subscription_id, publication_id, details, args, kwargs);
 }
 
@@ -555,4 +559,28 @@ void test_event_message(void) {
     List* sizes = list_from_dict(event->kwargs, "sizes");
 
     assert(sizes->len == 3);
+}
+
+// SUBSCRIBE Message Test
+
+Message* create_subscribe_message(void) {
+    Dict* options = create_dict();
+
+    return (Message*)subscribe_new(request_id, options, publish_uri);
+}
+
+void test_subscribe_message(void) {
+    Message* msg = create_subscribe_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Subscribe* subscribe = (Subscribe*)msg;
+
+    assert(subscribe->request_id == request_id);
+    assert(strcmp(subscribe->uri, publish_uri) == 0);
 }
