@@ -5,17 +5,16 @@
 #include "wampproto/value.h"
 #define MESSAGE_TYPE_ABORT 3
 
-typedef struct
-{
+typedef struct {
     Message base;
-    Dict *details;
-    char *reason;
-    List *args;
-    Dict *kwargs;
+    Dict* details;
+    char* reason;
+    List* args;
+    Dict* kwargs;
 } Abort;
 
-Abort *abort_new(Dict *details, char *reason, List *args, Dict *kwargs);
+Abort* abort_new(Dict* details, char* reason, List* args, Dict* kwargs);
 
-Message *abort_parse(const List *val);
+Message* abort_parse(const List* val);
 
 #endif

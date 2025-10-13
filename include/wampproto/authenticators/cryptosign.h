@@ -3,7 +3,6 @@
 
 #include "wampproto/authenticators/authenticator.h"
 
-ClientAuthenticator *cryptosign_authenticator_new(const char *auth_id, const char *private_key_hex,
-                                                  Dict *auth_extra);
+ClientAuthenticator* cryptosign_authenticator_new(const char* auth_id, const char* private_key_hex, Dict* auth_extra);
 
 #endif

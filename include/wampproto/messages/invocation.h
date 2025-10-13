@@ -6,22 +6,19 @@
 
 #define MESSAGE_TYPE_INVOCATION 68
 
-typedef struct
-{
-
+typedef struct {
     Message base;
 
     int64_t request_id;
     int64_t registration_id;
-    Dict *details;
-    List *args;
-    Dict *kwargs;
+    Dict* details;
+    List* args;
+    Dict* kwargs;
 
 } Invocation;
 
-Invocation *invocation_new(int64_t request_id, int64_t registration_id, Dict *details, List *args,
-                           Dict *kwargs);
+Invocation* invocation_new(int64_t request_id, int64_t registration_id, Dict* details, List* args, Dict* kwargs);
 
-Message *invocation_parse(const List *val);
+Message* invocation_parse(const List* val);
 
 #endif

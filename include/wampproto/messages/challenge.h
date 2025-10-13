@@ -6,15 +6,14 @@
 
 #define MESSAGE_TYPE_CHALLENGE 4
 
-typedef struct
-{
+typedef struct {
     Message base;
-    char *auth_method;
-    Dict *auth_extra;
+    char* auth_method;
+    Dict* auth_extra;
 } Challenge;
 
-Challenge *challenge_new(char *auth_method, Dict *auth_extra);
+Challenge* challenge_new(char* auth_method, Dict* auth_extra);
 
-Message *challenge_parse(const List *val);
+Message* challenge_parse(const List* val);
 
 #endif

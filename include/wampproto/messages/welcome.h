@@ -6,22 +6,21 @@
 
 #define MESSAGE_TYPE_WELCOME 2
 
-typedef struct
-{
+typedef struct {
     Message base;
 
     int64_t session_id;
-    Dict *details;
+    Dict* details;
 
-    char *authid;
-    char *authrole;
-    char *authmethod;
-    Dict *authextra;
-    Dict *roles;
+    char* authid;
+    char* authrole;
+    char* authmethod;
+    Dict* authextra;
+    Dict* roles;
 } Welcome;
 
-Welcome *welcome_new(int64_t session_id, Dict *details);
+Welcome* welcome_new(int64_t session_id, Dict* details);
 
-Message *welcome_parse(const List *val);
+Message* welcome_parse(const List* val);
 
 #endif

@@ -1,27 +1,24 @@
 #include "wampproto/messages/unregistered.h"
-#include "wampproto/value.h"
+
 #include <stdlib.h>
 
-static List *unregistered_marshal(const Message *self)
-{
-    Unregistered *unregistered = (Unregistered *)self;
+#include "wampproto/value.h"
 
-    Value *list = value_list(2);
+static List* unregistered_marshal(const Message* self) {
+    Unregistered* unregistered = (Unregistered*)self;
+
+    Value* list = value_list(2);
 
     value_list_append(list, value_int(MESSAGE_TYPE_UNREGISTERED));
     value_list_append(list, value_int(unregistered->request_id));
 
-    return (List *)list;
+    return (List*)list;
 }
 
-static void unregistered_free(Message *self)
-{
-    free(self);
-}
+static void unregistered_free(Message* self) { free(self); }
 
-Unregistered *unregistered_new(int64_t request_id)
-{
-    Unregistered *unregistered = calloc(1, sizeof(*unregistered));
+Unregistered* unregistered_new(int64_t request_id) {
+    Unregistered* unregistered = calloc(1, sizeof(*unregistered));
 
     unregistered->base.message_type = MESSAGE_TYPE_UNREGISTERED;
     unregistered->base.marshal = unregistered_marshal;
@@ -33,13 +30,10 @@ Unregistered *unregistered_new(int64_t request_id)
     return unregistered;
 }
 
-Message *unregistered_parse(const List *val)
-{
-
-    if (!val || val->len != 2)
-        return NULL;
+Message* unregistered_parse(const List* val) {
+    if (!val || val->len != 2) return NULL;
 
     int64_t request_id = value_as_int(val->items[1]);
 
-    return (Message *)unregistered_new(request_id);
+    return (Message*)unregistered_new(request_id);
 }
