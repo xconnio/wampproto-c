@@ -3,6 +3,7 @@
 #include "wampproto/messages/call.h"
 #include "wampproto/messages/cancel.h"
 #include "wampproto/messages/error.h"
+#include "wampproto/messages/event.h"
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
@@ -43,6 +44,7 @@ void test_result_message(void);
 
 void test_publish_message(void);
 void test_published_message(void);
+void test_event_message(void);
 
 int main(void)
 {
@@ -65,6 +67,7 @@ int main(void)
 
     test_publish_message();
     test_published_message();
+    test_event_message();
 
     return 0;
 }
@@ -559,4 +562,50 @@ void test_published_message(void)
 
     assert(published->request_id == request_id);
     assert(published->publication_id == publication_id);
+}
+
+// EVENT Message Test
+
+static int64_t subscription_id = 200;
+Message *create_event_message(void)
+{
+
+    Dict *details = create_dict();
+
+    Value *args_value = value_list(1);
+    value_list_append(args_value, value_str(publish_uri));
+    List *args = value_as_list(args_value);
+
+    Dict *kwargs = create_dict();
+    dict_insert(kwargs, "color", value_str("orange"));
+
+    Value *sizes_value = value_list(3);
+    value_list_append(sizes_value, value_int(1));
+    value_list_append(sizes_value, value_int(2));
+    value_list_append(sizes_value, value_int(3));
+
+    dict_insert(kwargs, "sizes", sizes_value);
+
+    return (Message *)event_new(subscription_id, publication_id, details, args, kwargs);
+}
+
+void test_event_message(void)
+{
+    Message *msg = create_event_message();
+    Serializer *serializer = cbor_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Event *event = (Event *)msg;
+
+    assert(event->subscription_id == subscription_id);
+    assert(event->publication_id == publication_id);
+
+    assert(event->args->len == 1);
+    List *sizes = list_from_dict(event->kwargs, "sizes");
+
+    assert(sizes->len == 3);
 }

@@ -5,6 +5,7 @@
 #include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
 #include "wampproto/messages/error.h"
+#include "wampproto/messages/event.h"
 #include "wampproto/messages/goodbye.h"
 #include "wampproto/messages/hello.h"
 #include "wampproto/messages/interrupt.h"
@@ -80,6 +81,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_PUBLISHED:
         return published_parse(data);
+
+    case MESSAGE_TYPE_EVENT:
+        return event_parse(data);
 
     case MESSAGE_TYPE_CHALLENGE:
         return challenge_parse(data);
