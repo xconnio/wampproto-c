@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "uthash.h"
 #include "wampproto/value.h"
+
+#include "uthash.h"
 
 Dict* create_dict() {
     Dict* dict = malloc(sizeof(Dict));

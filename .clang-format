@@ -2,3 +2,22 @@ BasedOnStyle: Google
 IndentWidth: 4
 UseTab: Never
 ColumnLimit: 120
+SortIncludes: true
+IncludeBlocks: Regroup
+
+IncludeCategories:
+  # 1. C system headers (e.g., <stdlib.h>, <stdio.h>)
+  - Regex: '^<[^/]*>$'
+    Priority: 1
+
+  # 2. Third-party library headers (e.g., <curl/curl.h>, <gtest/gtest.h>)
+  - Regex: '^<.*/.*>$'
+    Priority: 2
+
+  # 3. Local project headers — "wampproto/..." (your own library)
+  - Regex: '^"wampproto/.*"'
+    Priority: 3
+
+  # 4. Other local headers (e.g., "foo.h")
+  - Regex: '^".*"'
+    Priority: 4
