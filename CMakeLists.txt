@@ -53,15 +53,32 @@ endif()
 
 # Public include dir (installed, exported)
 target_include_directories(wampproto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-find_package(OpenSSL QUIET)
 find_library(SODIUM_LIBRARY sodium)
 find_path(SODIUM_INCLUDE_DIR sodium.h)
 find_library(UTHASH_LIB, uthash)
 
-if(OpenSSL_FOUND)
-  target_compile_definitions(wampproto PRIVATE HAVE_OPENSSL)
-  target_link_libraries(wampproto PRIVATE OpenSSL::Crypto)
-  target_include_directories(wampproto PRIVATE ${OPENSSL_INCLUDE_DIR})
+find_package(MbedTLS QUIET)
+if(MbedTLS_FOUND)
+  target_compile_definitions(wampproto PRIVATE HAVE_MBEDTLS)
+  target_link_libraries(wampproto PRIVATE mbedtls mbedcrypto)
+else()
+  message(
+    STATUS "MbedTLS CMake config not found, falling back to manual search")
+
+  find_path(MBEDTLS_INCLUDE_DIR mbedtls/version.h)
+  find_library(MBEDTLS_LIBRARY mbedtls)
+  find_library(MBEDCRYPTO_LIBRARY mbedcrypto)
+
+  if(MBEDTLS_INCLUDE_DIR
+     AND MBEDTLS_LIBRARY
+     AND MBEDCRYPTO_LIBRARY)
+    target_compile_definitions(wampproto PRIVATE HAVE_MBEDTLS)
+    target_include_directories(wampproto PRIVATE ${MBEDTLS_INCLUDE_DIR})
+    target_link_libraries(wampproto PRIVATE ${MBEDTLS_LIBRARY}
+                                            ${MBEDCRYPTO_LIBRARY})
+  else()
+    message(WARNING "MbedTLS not found; WAMPCRA salted wont be supported.")
+  endif()
 endif()
 
 target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB}

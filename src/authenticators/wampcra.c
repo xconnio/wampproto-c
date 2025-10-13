@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,8 +8,9 @@
 #include <sodium.h>
 #include <string.h>
 
-#ifdef HAVE_OPENSSL
-#include <openssl/evp.h>
+#ifdef HAVE_MBEDTLS
+#include "mbedtls/md.h"
+#include "mbedtls/pkcs5.h"
 #endif
 
 char *sign_signature(const char *secret, Dict *auth_extra);
@@ -71,7 +71,7 @@ int hmac_sha256_sign(unsigned char *signature, const unsigned char *challenge, s
     return 0;
 }
 
-#ifdef HAVE_OPENSSL
+#ifdef HAVE_MBEDTLS
 
 char *create_derive_secret(const char *secret, const char *salt, int iterations, int key_length)
 {
@@ -80,20 +80,46 @@ char *create_derive_secret(const char *secret, const char *salt, int iterations,
     if (key_length == 0)
         key_length = 32;
 
-    unsigned char derived_key[key_length];
-
-    // Derive key using PBKDF2-HMAC-SHA256
-    if (!PKCS5_PBKDF2_HMAC(secret, strlen(secret), (const unsigned char *)salt, strlen(salt),
-                           iterations, EVP_sha256(), key_length, derived_key))
+    unsigned char *derived_key = malloc(key_length);
+    if (!derived_key)
     {
-        fprintf(stderr, "PBKDF2 failed\n");
+        fprintf(stderr, "Memory allocation failed\n");
         return NULL;
     }
 
-    return base64_encode(derived_key, key_length);
+    const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    mbedtls_md_context_t ctx;
+    mbedtls_md_init(&ctx);
+
+    int ret = 0;
+
+    if (mbedtls_md_setup(&ctx, md_info, 1) != 0)
+    {
+        fprintf(stderr, "MD setup failed\n");
+        ret = -1;
+    }
+    else
+    {
+        ret = mbedtls_pkcs5_pbkdf2_hmac(&ctx, (const unsigned char *)secret, strlen(secret),
+                                        (const unsigned char *)salt, strlen(salt), iterations,
+                                        key_length, derived_key);
+    }
+
+    mbedtls_md_free(&ctx);
+
+    if (ret != 0)
+    {
+        fprintf(stderr, "PBKDF2 failed (code: %d)\n", ret);
+        free(derived_key);
+        return NULL;
+    }
+
+    char *encoded = base64_encode(derived_key, key_length);
+    free(derived_key);
+    return encoded;
 }
 
-#endif /* HAVE_OPENSSL */
+#endif /* HAVE_MBEDTLS */
 
 void create_signature(unsigned char *signature, const char *secret, size_t secret_len,
                       const unsigned char *challenge, size_t challenge_len,
@@ -105,7 +131,7 @@ void create_signature(unsigned char *signature, const char *secret, size_t secre
     size_t key_len = 0;
     char *b64_encoded = NULL;
 
-#ifdef HAVE_OPENSSL
+#ifdef HAVE_MBEDTLS
     size_t len = strlen((const char *)salt);
     if (len > 0)
     {
@@ -119,7 +145,7 @@ void create_signature(unsigned char *signature, const char *secret, size_t secre
         key = (const unsigned char *)secret;
         key_len = strlen(secret);
     }
-#endif /* HAVE_OPENSSL */
+#endif /* HAVE_MBEDTLS */
 
     hmac_sha256_sign(signature, challenge, challenge_len, key, key_len);
     free(b64_encoded);
