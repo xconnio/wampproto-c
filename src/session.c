@@ -1,4 +1,5 @@
 #include <uthash.h>
+
 #include <wampproto/messages/call.h>
 #include <wampproto/serializers/cbor.h>
 #include <wampproto/serializers/serializer.h>
