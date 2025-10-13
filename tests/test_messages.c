@@ -18,8 +18,12 @@
 #include "wampproto/messages/published.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/result.h"
+#include "wampproto/messages/subscribe.h"
+#include "wampproto/messages/subscribed.h"
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
+#include "wampproto/messages/unsubscribe.h"
+#include "wampproto/messages/unsubscribed.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/messages/yield.h"
 #include "wampproto/serializers/cbor.h"
@@ -46,6 +50,11 @@ void test_publish_message(void);
 void test_published_message(void);
 void test_event_message(void);
 
+void test_subscribe_message(void);
+void test_subscribed_message(void);
+void test_unsubscribe_message(void);
+void test_unsubscribed_message(void);
+
 int main(void) {
     test_hello_message();
     test_welcome_message();
@@ -67,6 +76,11 @@ int main(void) {
     test_publish_message();
     test_published_message();
     test_event_message();
+
+    test_subscribe_message();
+    test_subscribed_message();
+    test_unsubscribe_message();
+    test_unsubscribed_message();
 
     return 0;
 }
@@ -533,7 +547,6 @@ Message* create_event_message(void) {
     value_list_append(sizes_value, value_int(3));
 
     dict_insert(kwargs, "sizes", sizes_value);
-
     return (Message*)event_new(subscription_id, publication_id, details, args, kwargs);
 }
 
@@ -555,4 +568,85 @@ void test_event_message(void) {
     List* sizes = list_from_dict(event->kwargs, "sizes");
 
     assert(sizes->len == 3);
+}
+
+// SUBSCRIBE Message Test
+
+Message* create_subscribe_message(void) {
+    Dict* options = create_dict();
+
+    return (Message*)subscribe_new(request_id, options, publish_uri);
+}
+
+void test_subscribe_message(void) {
+    Message* msg = create_subscribe_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Subscribe* subscribe = (Subscribe*)msg;
+
+    assert(subscribe->request_id == request_id);
+    assert(strcmp(subscribe->uri, publish_uri) == 0);
+}
+
+// UNSUBSCRIBE Message Test
+
+Message* create_subscribed_message(void) { return (Message*)subscribed_new(request_id, subscription_id); }
+
+void test_subscribed_message(void) {
+    Message* msg = create_subscribed_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Subscribed* subscribed = (Subscribed*)msg;
+
+    assert(subscribed->request_id == request_id);
+    assert(subscribed->subscription_id == subscription_id);
+}
+
+Message* create_unsubscribe_message(void) { return (Message*)unsubscribe_new(request_id, subscription_id); }
+
+void test_unsubscribe_message(void) {
+    Message* msg = create_unsubscribe_message();
+    Serializer* serializer = json_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unsubscribe* unsubscribe = (Unsubscribe*)msg;
+
+    assert(unsubscribe->request_id == request_id);
+    assert(unsubscribe->subscription_id == subscription_id);
+}
+
+// UNSUBSCRIBED Message Test
+
+Message* create_unsubscribed_message(void) { return (Message*)unsubscribed_new(request_id); }
+
+void test_unsubscribed_message(void) {
+    Message* msg = create_unsubscribe_message();
+    Serializer* serializer = msgpack_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unsubscribed* unsubscribed = (Unsubscribed*)msg;
+
+    assert(unsubscribed->request_id == request_id);
 }
