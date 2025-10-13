@@ -3,6 +3,6 @@
 
 #include "wampproto/serializers/serializer.h"
 
-Serializer *json_serializer_new(void);
+Serializer* json_serializer_new(void);
 
 #endif

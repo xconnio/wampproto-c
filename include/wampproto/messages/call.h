@@ -6,18 +6,17 @@
 
 #define MESSAGE_TYPE_CALL 48
 
-typedef struct
-{
+typedef struct {
     Message base;
     int64_t request_id;
-    Dict *options;
-    char *procedure;
-    List *args;
-    Dict *kwargs;
+    Dict* options;
+    char* procedure;
+    List* args;
+    Dict* kwargs;
 } Call;
 
-Call *call_new(int64_t request_id, Dict *options, char *procedure, List *args, Dict *kwargs);
+Call* call_new(int64_t request_id, Dict* options, char* procedure, List* args, Dict* kwargs);
 
-Message *call_parse(const List *val);
+Message* call_parse(const List* val);
 
 #endif

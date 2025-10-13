@@ -4,17 +4,15 @@
 #include "wampproto/messages/message.h"
 #define MESSAGE_TYPE_PUBLISHED 17
 
-typedef struct
-{
-
+typedef struct {
     Message base;
     int64_t request_id;
     int64_t publication_id;
 
 } Published;
 
-Published *published_new(int64_t request_id, int64_t publication_id);
+Published* published_new(int64_t request_id, int64_t publication_id);
 
-Message *published_parse(const List *val);
+Message* published_parse(const List* val);
 
 #endif

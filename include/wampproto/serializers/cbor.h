@@ -3,6 +3,6 @@
 
 #include "wampproto/serializers/serializer.h"
 
-Serializer *cbor_serializer_new(void);
+Serializer* cbor_serializer_new(void);
 
 #endif

@@ -5,16 +5,15 @@
 
 #define MESSAGE_TYPE_UNREGISTERED 67
 
-typedef struct
-{
+typedef struct {
     Message base;
 
     int64_t request_id;
 
 } Unregistered;
 
-Unregistered *unregistered_new(int64_t request_id);
+Unregistered* unregistered_new(int64_t request_id);
 
-Message *unregistered_parse(const List *val);
+Message* unregistered_parse(const List* val);
 
 #endif

@@ -3,6 +3,6 @@
 
 #include "wampproto/serializers/serializer.h"
 
-Serializer *msgpack_serializer_new(void);
+Serializer* msgpack_serializer_new(void);
 
 #endif

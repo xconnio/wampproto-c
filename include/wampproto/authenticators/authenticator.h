@@ -7,17 +7,16 @@
 
 typedef struct ClientAuthenticator ClientAuthenticator;
 
-struct ClientAuthenticator
-{
-    const char *auth_id;
-    const char *auth_method;
-    Dict *auth_extra;
+struct ClientAuthenticator {
+    const char* auth_id;
+    const char* auth_method;
+    Dict* auth_extra;
 
-    const char *auth_data;
+    const char* auth_data;
 
-    Authenticate *(*authenticate)(const ClientAuthenticator *self, const Challenge *challenge);
+    Authenticate* (*authenticate)(const ClientAuthenticator* self, const Challenge* challenge);
 
-    void (*free)(ClientAuthenticator *self);
+    void (*free)(ClientAuthenticator* self);
 };
 
 #endif

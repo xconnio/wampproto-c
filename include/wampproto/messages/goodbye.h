@@ -4,16 +4,15 @@
 #include "wampproto/messages/message.h"
 #define MESSAGE_TYPE_GOODBYE 6
 
-typedef struct
-{
+typedef struct {
     Message base;
-    Dict *details;
-    char *uri;
+    Dict* details;
+    char* uri;
 
 } Goodbye;
 
-Goodbye *goodbye_new(Dict *details, char *uri);
+Goodbye* goodbye_new(Dict* details, char* uri);
 
-Message *goodbye_parse(const List *val);
+Message* goodbye_parse(const List* val);
 
 #endif

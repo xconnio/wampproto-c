@@ -5,15 +5,14 @@
 
 typedef struct Message Message;
 
-struct Message
-{
+struct Message {
     int message_type;
 
-    List *(*marshal)(const Message *self);
+    List* (*marshal)(const Message* self);
 
-    void (*free)(Message *self);
+    void (*free)(Message* self);
 
-    Message *(*parse)(const List *data);
+    Message* (*parse)(const List* data);
 };
 
 #endif

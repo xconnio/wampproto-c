@@ -1,34 +1,28 @@
 #include "wampproto/dict.h"
-#include "wampproto/value.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "uthash.h"
+#include "wampproto/value.h"
 
-Dict *create_dict()
-{
-
-    Dict *dict = malloc(sizeof(Dict));
-    if (!dict)
-        return NULL;
+Dict* create_dict() {
+    Dict* dict = malloc(sizeof(Dict));
+    if (!dict) return NULL;
 
     dict->table = NULL;
     dict->count = 0;
     return dict;
 }
 
-void dict_insert(Dict *dict, const char *key, Value *value)
-{
-    if (!dict || !key)
-        return;
+void dict_insert(Dict* dict, const char* key, Value* value) {
+    if (!dict || !key) return;
 
-    Entry *entry = NULL;
+    Entry* entry = NULL;
     HASH_FIND_STR(dict->table, key, entry);
 
-    if (entry)
-    {
+    if (entry) {
         // Replace existing value
         value_free(entry->value);
         entry->value = value;
@@ -37,8 +31,7 @@ void dict_insert(Dict *dict, const char *key, Value *value)
 
     // Create new entry
     entry = malloc(sizeof(*entry));
-    if (!entry)
-        return;
+    if (!entry) return;
 
     entry->key = strdup(key);
     entry->value = value;
@@ -47,25 +40,20 @@ void dict_insert(Dict *dict, const char *key, Value *value)
     dict->count++;
 }
 
-Value *dict_get(Dict *dict, const char *key)
-{
-    if (!dict || !key)
-        return NULL;
+Value* dict_get(Dict* dict, const char* key) {
+    if (!dict || !key) return NULL;
 
-    Entry *entry = NULL;
+    Entry* entry = NULL;
     HASH_FIND_STR(dict->table, key, entry);
     return entry ? entry->value : NULL;
 }
 
-void dict_remove(Dict *dict, const char *key)
-{
-    if (!dict || !key)
-        return;
+void dict_remove(Dict* dict, const char* key) {
+    if (!dict || !key) return;
 
-    Entry *entry = NULL;
+    Entry* entry = NULL;
     HASH_FIND_STR(dict->table, key, entry);
-    if (entry)
-    {
+    if (entry) {
         HASH_DEL(dict->table, entry);
         free(entry->key);
         value_free(entry->value);
@@ -74,14 +62,11 @@ void dict_remove(Dict *dict, const char *key)
     }
 }
 
-void dict_free(Dict *dict)
-{
-    if (!dict || dict->count == 0)
-        return;
+void dict_free(Dict* dict) {
+    if (!dict || dict->count == 0) return;
 
     Entry *curr, *tmp;
-    HASH_ITER(hh, dict->table, curr, tmp)
-    {
+    HASH_ITER(hh, dict->table, curr, tmp) {
         HASH_DEL(dict->table, curr);
         free(curr->key);
         value_free(curr->value);
