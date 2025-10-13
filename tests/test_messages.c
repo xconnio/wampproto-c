@@ -9,6 +9,7 @@
 #include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/publish.h"
+#include "wampproto/messages/published.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/result.h"
 #include "wampproto/messages/unregister.h"
@@ -41,6 +42,7 @@ void test_yield_message(void);
 void test_result_message(void);
 
 void test_publish_message(void);
+void test_published_message(void);
 
 int main(void)
 {
@@ -62,6 +64,7 @@ int main(void)
     test_result_message();
 
     test_publish_message();
+    test_published_message();
 
     return 0;
 }
@@ -531,4 +534,29 @@ void test_publish_message(void)
     List *sizes = list_from_dict(publish->kwargs, "sizes");
 
     assert(sizes->len == 3);
+}
+
+// PUBLISHED Message Type
+
+static int64_t publication_id = 9876;
+Message *create_published_message(void)
+{
+
+    return (Message *)published_new(request_id, publication_id);
+}
+
+void test_published_message(void)
+{
+    Message *msg = create_published_message();
+    Serializer *serializer = msgpack_serializer_new();
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Published *published = (Published *)msg;
+
+    assert(published->request_id == request_id);
+    assert(published->publication_id == publication_id);
 }

@@ -11,6 +11,7 @@
 #include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/messages/publish.h"
+#include "wampproto/messages/published.h"
 #include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
 #include "wampproto/messages/result.h"
@@ -76,6 +77,9 @@ Message *to_message(const List *data)
 
     case MESSAGE_TYPE_PUBLISH:
         return publish_parse(data);
+
+    case MESSAGE_TYPE_PUBLISHED:
+        return published_parse(data);
 
     case MESSAGE_TYPE_CHALLENGE:
         return challenge_parse(data);
