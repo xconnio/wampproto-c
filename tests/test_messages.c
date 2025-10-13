@@ -23,6 +23,7 @@
 #include "wampproto/messages/unregister.h"
 #include "wampproto/messages/unregistered.h"
 #include "wampproto/messages/unsubscribe.h"
+#include "wampproto/messages/unsubscribed.h"
 #include "wampproto/messages/welcome.h"
 #include "wampproto/messages/yield.h"
 #include "wampproto/serializers/cbor.h"
@@ -52,6 +53,7 @@ void test_event_message(void);
 void test_subscribe_message(void);
 void test_subscribed_message(void);
 void test_unsubscribe_message(void);
+void test_unsubscribed_message(void);
 
 int main(void) {
     test_hello_message();
@@ -78,6 +80,7 @@ int main(void) {
     test_subscribe_message();
     test_subscribed_message();
     test_unsubscribe_message();
+    test_unsubscribed_message();
 
     return 0;
 }
@@ -627,4 +630,23 @@ void test_unsubscribe_message(void) {
 
     assert(unsubscribe->request_id == request_id);
     assert(unsubscribe->subscription_id == subscription_id);
+}
+
+// UNSUBSCRIBED Message Test
+
+Message* create_unsubscribed_message(void) { return (Message*)unsubscribed_new(request_id); }
+
+void test_unsubscribed_message(void) {
+    Message* msg = create_unsubscribe_message();
+    Serializer* serializer = msgpack_serializer_new();
+
+    Bytes bytes = serializer->serialize(serializer, msg);
+
+    msg = serializer->deserialize(serializer, bytes);
+
+    assert(msg != NULL);
+
+    Unsubscribed* unsubscribed = (Unsubscribed*)msg;
+
+    assert(unsubscribed->request_id == request_id);
 }
