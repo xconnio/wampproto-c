@@ -14,11 +14,10 @@ static List* authenticate_marshal(const Message* self) {
     Value* list = value_list(3);
     value_list_append(list, value_int(MESSAGE_TYPE_AUTHENTICATE));
     value_list_append(list, value_str(authenticate->signature));
-
-    Value* auth_extra = value_dict();
-    auth_extra->dict_val = authenticate->auth_extra;
-
-    value_list_append(list, auth_extra);
+    if (authenticate->auth_extra == NULL)
+        value_list_append(list, value_from_dict(create_dict()));
+    else
+        value_list_append(list, value_from_dict(authenticate->auth_extra));
 
     return (List*)list;
 }
