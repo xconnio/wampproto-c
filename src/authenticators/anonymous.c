@@ -1,13 +1,11 @@
 #include <stdlib.h>
 
 #include "wampproto/authenticators/authenticator.h"
+#include "wampproto/messages/authenticate.h"
 #include "wampproto/value.h"
 
 Authenticate* authenticate(const ClientAuthenticator* self, const Challenge* challenge) {
-    (void)self;
-    (void)challenge;
-
-    return NULL;
+    return authenticate_new("", self->auth_extra);
 }
 
 ClientAuthenticator* anonymous_authenticator_new(const char* auth_id, Dict* auth_extra) {

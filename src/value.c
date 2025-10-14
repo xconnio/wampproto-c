@@ -83,9 +83,15 @@ Dict* value_as_dict(const Value* value) {
 
 Value* value_bytes(const uint8_t* data, size_t len) {
     Value* v = value_alloc(VALUE_BYTES);
-    v->bytes_val.data = malloc(len);
-    memcpy(v->bytes_val.data, data, len);
-    v->bytes_val.len = len;
+    if (len > 0 && data != NULL) {
+        v->bytes_val.data = malloc(len);
+        memcpy(v->bytes_val.data, data, len);
+        v->bytes_val.len = len;
+
+    } else {
+        v->bytes_val.data = NULL;
+        v->bytes_val.len = 0;
+    }
     return v;
 }
 

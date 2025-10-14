@@ -3,10 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "wampproto/authenticators/authenticator.h"
+#include "wampproto/authenticators/ticket.h"
 #include "wampproto/dict.h"
+#include "wampproto/joiner.h"
 #include "wampproto/messages/abort.h"
 #include "wampproto/messages/call.h"
 #include "wampproto/messages/cancel.h"
+#include "wampproto/messages/challenge.h"
 #include "wampproto/messages/error.h"
 #include "wampproto/messages/event.h"
 #include "wampproto/messages/goodbye.h"
@@ -55,6 +59,8 @@ void test_subscribed_message(void);
 void test_unsubscribe_message(void);
 void test_unsubscribed_message(void);
 
+void test_joiner(void);
+
 int main(void) {
     test_hello_message();
     test_welcome_message();
@@ -81,6 +87,8 @@ int main(void) {
     test_subscribed_message();
     test_unsubscribe_message();
     test_unsubscribed_message();
+
+    test_joiner();
 
     return 0;
 }
@@ -121,10 +129,13 @@ void test_hello_message(void) {
     assert(strcmp(value_as_str(list->items[0]), authmethod) == 0);
 }
 
+const static char* auth_role = "user";
 static Message* create_welcome_message(void) {
     Dict* details = create_dict();
     Dict* roles = create_dict();
     dict_insert(roles, "broker", value_bool(1));
+    dict_insert(details, "authid", value_str(authid));
+    dict_insert(details, "authrole", value_str(auth_role));
     dict_insert(details, "roles", value_from_dict(roles));
     dict_insert(details, "authmethod", value_str(authmethod));
 
@@ -649,4 +660,30 @@ void test_unsubscribed_message(void) {
     Unsubscribed* unsubscribed = (Unsubscribed*)msg;
 
     assert(unsubscribed->request_id == request_id);
+}
+
+// JOINER TESTS
+
+void test_joiner(void) {
+    Serializer* serializer = json_serializer_new();
+    ClientAuthenticator* authenticator = ticket_authenticator_new(authid, "test", create_dict());
+    Joiner* joiner = joiner_new(realm, serializer, authenticator);
+
+    Bytes bytes = joiner->send_hello(joiner);
+
+    Challenge* challenge = challenge_new("ticket", create_dict());
+    Bytes challenge_bytes = serializer->serialize(serializer, (Message*)challenge);
+
+    Bytes more_btes = joiner->receive(joiner, challenge_bytes);
+
+    Message* welcome = create_welcome_message();
+    Bytes welcome_bytes = serializer->serialize(serializer, welcome);
+
+    joiner->receive(joiner, welcome_bytes);
+
+    assert(joiner->session_details != NULL);
+    assert(joiner->session_details->session_id == session_id);
+    assert(strcmp(joiner->session_details->realm, realm) == 0);
+    assert(strcmp(joiner->session_details->auth_id, authid) == 0);
+    assert(strcmp(joiner->session_details->auth_role, auth_role) == 0);
 }
