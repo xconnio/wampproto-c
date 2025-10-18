@@ -1,11 +1,13 @@
 #include <assert.h>
 #include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "wampproto/authenticators/authenticator.h"
 #include "wampproto/authenticators/ticket.h"
 #include "wampproto/dict.h"
+#include "wampproto/id_generator.h"
 #include "wampproto/joiner.h"
 #include "wampproto/messages/abort.h"
 #include "wampproto/messages/call.h"
@@ -61,6 +63,8 @@ void test_unsubscribed_message(void);
 
 void test_joiner(void);
 
+void test_id_generator(void);
+
 int main(void) {
     test_hello_message();
     test_welcome_message();
@@ -89,7 +93,7 @@ int main(void) {
     test_unsubscribed_message();
 
     test_joiner();
-
+    test_id_generator();
     return 0;
 }
 
@@ -686,4 +690,11 @@ void test_joiner(void) {
     assert(strcmp(joiner->session_details->realm, realm) == 0);
     assert(strcmp(joiner->session_details->auth_id, authid) == 0);
     assert(strcmp(joiner->session_details->auth_role, auth_role) == 0);
+}
+
+// IDGenerator Test
+
+void test_id_generator(void) {
+    IDGenerator* id_generator = id_generator_new();
+    for (int i = 0; i < 10; i++) assert(id_generator->next() == (i + 1));
 }
