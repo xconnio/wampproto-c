@@ -109,4 +109,8 @@ if(BUILD_TESTS)
   add_executable(test_messages tests/test_messages.c)
   target_link_libraries(test_messages PRIVATE wampproto)
   add_test(NAME test_messages COMMAND test_messages)
+
+  add_executable(test_session tests/test_session.c)
+  target_link_libraries(test_session PRIVATE wampproto)
+  add_test(NAME test_session COMMAND test_session)
 endif()
