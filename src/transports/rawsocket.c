@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Handshake* handshake_new(const Serializer serializer, const int max_message_size) {
+Handshake* handshake_new(const SerializerType serializer, const int max_message_size) {
     Handshake* hs = malloc(sizeof(Handshake));
     if (!hs) return NULL;
 
@@ -49,7 +49,7 @@ Handshake* receive_handshake(const uint8_t data[4], int* err) {
         return NULL;
     }
 
-    const Serializer serializer = data[1] & 0x0F;
+    const SerializerType serializer = data[1] & 0x0F;
     const int size_shift = (data[1] >> 4) + 9;
     const int max_message_size = 1 << size_shift;
 

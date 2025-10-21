@@ -17,13 +17,13 @@ typedef struct {
     UT_hash_handle hh;
 } MapUint64ToUint64;
 
-typedef struct Session Session;
+typedef struct wampproto_Session wampproto_Session;
 
-typedef struct Session {
+typedef struct wampproto_Session {
     Serializer* serializer;
-    Bytes (*send_message)(Session* session, const Message* message);
-    Message* (*receive_message)(Session* session, Message* message);
-    void* (*free)(Session* session);
+    Bytes (*send_message)(wampproto_Session* session, const Message* message);
+    Message* (*receive_message)(wampproto_Session* session, Message* message);
+    void* (*free)(wampproto_Session* session);
 
     Mutex* mutex;
 
@@ -39,11 +39,11 @@ typedef struct Session {
     MapUint64ToVoid* subscribeRequests;
     MapUint64ToVoid* subscriptions;
     MapUint64ToUint64* unsubscribeRequests;
-} Session;
+} wampproto_Session;
 
-Bytes session_send_message(Session* session, const Message* message);
-Message* session_receive_message(Session* session, Message* message);
-Session* session_new(Serializer* serializer);
+Bytes session_send_message(wampproto_Session* session, const Message* message);
+Message* session_receive_message(wampproto_Session* session, Message* message);
+wampproto_Session* session_new(Serializer* serializer);
 
 static void add_void_entry(MapUint64ToVoid** requests, int64_t request_id);
 static void add_value_entry(MapUint64ToUint64** requests, int64_t request_id, int64_t value);

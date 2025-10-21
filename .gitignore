@@ -53,3 +53,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+
+.cache/
+cmake-build-debug/
+compile_commands.json
+deps/

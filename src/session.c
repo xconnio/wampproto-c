@@ -30,13 +30,13 @@
 #include "wampproto/serializers/serializer.h"
 #include "wampproto/value.h"
 
-Session* session_new(Serializer* serializer) {
-    Session* session = malloc(sizeof(Session));
+wampproto_Session* session_new(Serializer* serializer) {
+    wampproto_Session* session = malloc(sizeof(*session));
     if (!session) {
         return NULL;
     }
 
-    memset(session, 0, sizeof(Session));
+    memset(session, 0, sizeof(wampproto_Session));
 
     if (serializer == NULL) serializer = cbor_serializer_new();
 
@@ -47,7 +47,7 @@ Session* session_new(Serializer* serializer) {
     return session;
 }
 
-Bytes session_send_message(Session* session, const Message* message) {
+Bytes session_send_message(wampproto_Session* session, const Message* message) {
     mutex_lock(session->mutex);
     const Serializer* serializer = session->serializer;
 
@@ -138,7 +138,7 @@ Bytes session_send_message(Session* session, const Message* message) {
     return bytes;
 }
 
-Message* session_receive_message(Session* session, Message* message) {
+Message* session_receive_message(wampproto_Session* session, Message* message) {
     mutex_lock(session->mutex);
 
     Message* output = NULL;
