@@ -314,4 +314,6 @@ void test_calling_and_invocation(void) {
     assert(msg != NULL);
     bytes = session->send_message(session, create_invocation_error_message());
     assert(bytes.len > 0);
+
+    session->free(session);
 }
