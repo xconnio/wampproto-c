@@ -34,7 +34,7 @@ file(GLOB_RECURSE WAMPPROTO_SOURCES src/*.c)
 
 add_library(wampproto STATIC ${WAMPPROTO_SOURCES})
 
-set(TINYCBOR_ROOT "${CMAKE_SOURCE_DIR}/deps/tinycbor/install")
+set(TINYCBOR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/install")
 
 add_library(TinyCBOR::TinyCBOR STATIC IMPORTED)
 
@@ -110,7 +110,7 @@ if(BUILD_TESTS)
   target_link_libraries(test_messages PRIVATE wampproto)
   add_test(NAME test_messages COMMAND test_messages)
 
-  add_executable(test_session tests/test_session.c)
-  target_link_libraries(test_session PRIVATE wampproto)
-  add_test(NAME test_session COMMAND test_session)
+  add_executable(test_wampproto_session tests/test_wampproto_session.c)
+  target_link_libraries(test_wampproto_session PRIVATE wampproto)
+  add_test(NAME test_wampproto_session COMMAND test_wampproto_session)
 endif()

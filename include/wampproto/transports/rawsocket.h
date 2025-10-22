@@ -7,12 +7,12 @@
 #define PROTOCOL_MAX_MSG_SIZE (1 << 24)
 #define DEFAULT_MAX_MSG_SIZE (1 << 20)
 
-typedef enum { SERIALIZER_JSON = 1, SERIALIZER_MSGPACK = 2, SERIALIZER_CBOR = 3 } Serializer;
+typedef enum { SERIALIZER_JSON = 1, SERIALIZER_MSGPACK = 2, SERIALIZER_CBOR = 3 } SerializerType;
 
 typedef enum { MESSAGE_WAMP = 0, MESSAGE_PING = 1, MESSAGE_PONG = 2 } MessageType;
 
 typedef struct {
-    Serializer serializer;
+    SerializerType serializer;
     int max_message_size;
 } Handshake;
 
@@ -22,7 +22,7 @@ typedef struct {
 } MessageHeader;
 
 /* Handshake functions */
-Handshake* handshake_new(Serializer serializer, int max_message_size);
+Handshake* handshake_new(SerializerType serializer, int max_message_size);
 void handshake_free(Handshake* hs);
 
 int send_handshake(const Handshake* hs, uint8_t out[4]);

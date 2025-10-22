@@ -1,10 +1,30 @@
 #ifndef WAMPPROTO_MESSAGES_H
 #define WAMPPROTO_MESSAGES_H
 
+#include "wampproto/messages/abort.h"
 #include "wampproto/messages/authenticate.h"
 #include "wampproto/messages/call.h"
+#include "wampproto/messages/cancel.h"
 #include "wampproto/messages/challenge.h"
+#include "wampproto/messages/error.h"
+#include "wampproto/messages/event.h"
+#include "wampproto/messages/goodbye.h"
+#include "wampproto/messages/hello.h"
+#include "wampproto/messages/interrupt.h"
+#include "wampproto/messages/invocation.h"
 #include "wampproto/messages/message.h"
+#include "wampproto/messages/publish.h"
+#include "wampproto/messages/published.h"
+#include "wampproto/messages/register.h"
 #include "wampproto/messages/registered.h"
+#include "wampproto/messages/result.h"
+#include "wampproto/messages/subscribe.h"
+#include "wampproto/messages/subscribed.h"
+#include "wampproto/messages/unregister.h"
+#include "wampproto/messages/unregistered.h"
+#include "wampproto/messages/unsubscribe.h"
+#include "wampproto/messages/unsubscribed.h"
+#include "wampproto/messages/welcome.h"
+#include "wampproto/messages/yield.h"
 
 #endif

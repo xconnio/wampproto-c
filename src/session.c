@@ -30,13 +30,22 @@
 #include "wampproto/serializers/serializer.h"
 #include "wampproto/value.h"
 
-Session* session_new(Serializer* serializer) {
-    Session* session = malloc(sizeof(Session));
+static void session_free(wampproto_Session* session);
+
+static void add_void_entry(MapUint64ToVoid** requests, int64_t request_id);
+static void add_value_entry(MapUint64ToUint64** requests, int64_t request_id, int64_t value);
+static Bytes empty_bytes(void);
+static int64_t remove_void_entry(MapUint64ToVoid** requests, int64_t request_id);
+static int64_t remove_value_entry(MapUint64ToUint64** requests, int64_t request_id);
+static int64_t void_entry_exists(MapUint64ToVoid** requests, int64_t request_id);
+
+wampproto_Session* session_new(Serializer* serializer) {
+    wampproto_Session* session = malloc(sizeof(*session));
     if (!session) {
         return NULL;
     }
 
-    memset(session, 0, sizeof(Session));
+    memset(session, 0, sizeof(wampproto_Session));
 
     if (serializer == NULL) serializer = cbor_serializer_new();
 
@@ -44,10 +53,11 @@ Session* session_new(Serializer* serializer) {
     session->mutex = mutex_create();
     session->send_message = session_send_message;
     session->receive_message = session_receive_message;
+    session->free = session_free;
     return session;
 }
 
-Bytes session_send_message(Session* session, const Message* message) {
+Bytes session_send_message(wampproto_Session* session, const Message* message) {
     mutex_lock(session->mutex);
     const Serializer* serializer = session->serializer;
 
@@ -138,7 +148,7 @@ Bytes session_send_message(Session* session, const Message* message) {
     return bytes;
 }
 
-Message* session_receive_message(Session* session, Message* message) {
+Message* session_receive_message(wampproto_Session* session, Message* message) {
     mutex_lock(session->mutex);
 
     Message* output = NULL;
@@ -342,4 +352,42 @@ static int64_t remove_value_entry(MapUint64ToUint64** requests, int64_t request_
 
     HASH_DEL(*requests, found);
     return value;
+}
+
+void free_MapUint64ToVoid(MapUint64ToVoid** map) {
+    MapUint64ToVoid *current, *tmp;
+    HASH_ITER(hh, *map, current, tmp) {
+        HASH_DEL(*map, current);
+        free(current);
+    }
+    *map = NULL;
+}
+
+void free_MapUint64ToUint64(MapUint64ToUint64** map) {
+    MapUint64ToUint64 *current, *tmp;
+    HASH_ITER(hh, *map, current, tmp) {
+        HASH_DEL(*map, current);
+        free(current);
+    }
+    *map = NULL;
+}
+
+void session_free(wampproto_Session* session) {
+    if (!session) return;
+
+    free_MapUint64ToVoid(&session->callRequests);
+    free_MapUint64ToVoid(&session->registerRequests);
+    free_MapUint64ToVoid(&session->registrations);
+    free_MapUint64ToVoid(&session->invocationRequests);
+    free_MapUint64ToUint64(&session->unregisterRequests);
+
+    free_MapUint64ToVoid(&session->publishRequests);
+    free_MapUint64ToVoid(&session->subscribeRequests);
+    free_MapUint64ToVoid(&session->subscriptions);
+    free_MapUint64ToUint64(&session->unsubscribeRequests);
+
+    if (session->mutex) mutex_destroy(session->mutex);
+    if (session->serializer) session->serializer->free(session->serializer);
+
+    free(session);
 }

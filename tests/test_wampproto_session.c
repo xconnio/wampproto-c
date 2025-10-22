@@ -83,7 +83,7 @@ Message *create_unregister_error_message(void) {
 
 void test_registering_and_unregistering(void) {
     // Register a procedure successfully.
-    Session *session = session_new(json_serializer_new());
+    wampproto_Session *session = session_new(json_serializer_new());
     Bytes bytes = session->send_message(session, create_register_message());
     Message *msg = session->receive_message(session, create_registered_message());
     assert(msg != NULL);
@@ -147,7 +147,7 @@ Message *create_unsubscribe_error_message(void) {
 
 void test_subscribing_and_unsubscribing(void) {
     // Subscribe to a topic successfully.
-    Session *session = session_new(json_serializer_new());
+    wampproto_Session *session = session_new(json_serializer_new());
     Bytes bytes = session->send_message(session, create_subscribe_message());
     Message *msg = session->receive_message(session, create_subscribed_message());
     assert(msg != NULL);
@@ -208,7 +208,7 @@ Message *create_event_message(void) {
 
 void test_publishing_and_events(void) {
     // Publish with acknowledge
-    Session *session = session_new(json_serializer_new());
+    wampproto_Session *session = session_new(json_serializer_new());
     Bytes bytes = session->send_message(session, create_publish_message());
     Message *msg = session->receive_message(session, create_published_message());
     assert(msg != NULL);
@@ -289,7 +289,7 @@ Message *create_invocation_error_message(void) {
 
 void test_calling_and_invocation(void) {
     // Call and Result
-    Session *session = session_new(json_serializer_new());
+    wampproto_Session *session = session_new(json_serializer_new());
     Bytes bytes = session->send_message(session, create_call_message());
     Message *msg = session->receive_message(session, create_result_message());
     assert(msg != NULL);
@@ -314,4 +314,6 @@ void test_calling_and_invocation(void) {
     assert(msg != NULL);
     bytes = session->send_message(session, create_invocation_error_message());
     assert(bytes.len > 0);
+
+    session->free(session);
 }
