@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "wampproto/authenticators/authenticator.h"
+#include "wampproto/authenticators/cryptosign.h"
 #include "wampproto/authenticators/ticket.h"
 #include "wampproto/dict.h"
 #include "wampproto/id_generator.h"
@@ -668,6 +669,8 @@ void test_unsubscribed_message(void) {
 
 // JOINER TESTS
 
+static char* private_key_hex = "d2bbd1b9723f381a1dc928c60931264645d35f592b2fe6811f5a20fcfb843b0b";
+static char* public_key_hex = "25bdf068d786251af85bd81a15ad72dff34c9940e79453ce5c9ce1183678288c";
 void test_joiner(void) {
     Serializer* serializer = json_serializer_new();
     ClientAuthenticator* authenticator = ticket_authenticator_new(authid, "test", create_dict());
@@ -690,6 +693,17 @@ void test_joiner(void) {
     assert(strcmp(joiner->session_details->realm, realm) == 0);
     assert(strcmp(joiner->session_details->auth_id, authid) == 0);
     assert(strcmp(joiner->session_details->auth_role, auth_role) == 0);
+
+    // cryptosign fix
+    authenticator = cryptosign_authenticator_new(authid, private_key_hex, create_dict());
+    joiner = joiner_new(realm, serializer, authenticator);
+    bytes = joiner->send_hello(joiner);
+    Message* msg = serializer->deserialize(serializer, bytes);
+    Hello* hello = (Hello*)msg;
+    Dict* auth_extra = hello->auth_extra;
+    assert(auth_extra != NULL);
+    char* pubkey = str_from_dict(auth_extra, "pubkey");
+    assert(strcmp(pubkey, public_key_hex) == 0);
 }
 
 // IDGenerator Test

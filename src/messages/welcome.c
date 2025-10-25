@@ -19,7 +19,7 @@ static List* welcome_marshal(const Message* self) {
 static void welcome_free(Message* self) { free(self); }
 
 Welcome* welcome_new(int64_t session_id, Dict* details) {
-    Welcome* welcome = calloc(session_id, sizeof(*welcome));
+    Welcome* welcome = calloc(1, sizeof(*welcome));
     welcome->base.message_type = MESSAGE_TYPE_WELCOME;
     welcome->base.marshal = welcome_marshal;
     welcome->base.free = welcome_free;
