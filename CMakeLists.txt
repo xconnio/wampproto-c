@@ -3,45 +3,64 @@ project(wampproto C)
 
 set(CMAKE_C_STANDARD 11)
 
-find_program(CLANG_FORMAT_EXE NAMES clang-format)
-if(CLANG_FORMAT_EXE)
-  message(STATUS "Found clang-format: ${CLANG_FORMAT_EXE}")
+if(TARGET format OR CMAKE_BUILD_TYPE STREQUAL "Format")
+  find_program(CLANG_FORMAT_EXE NAMES clang-format)
+  if(CLANG_FORMAT_EXE)
+    message(STATUS "Found clang-format: ${CLANG_FORMAT_EXE}")
 
-  file(GLOB_RECURSE ALL_SOURCE_FILES ${CMAKE_SOURCE_DIR}/include/*.h
-       ${CMAKE_SOURCE_DIR}/src/*.c ${CMAKE_SOURCE_DIR}/tests/*.c
-       ${CMAKE_SOURCE_DIR}/tests/*.h)
+    file(GLOB_RECURSE ALL_SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/*.c
+         ${CMAKE_SOURCE_DIR}/src/*.h ${CMAKE_SOURCE_DIR}/tests/*.c
+         ${CMAKE_SOURCE_DIR}/tests/*.h)
 
-  add_custom_target(
-    format
-    COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${ALL_SOURCE_FILES}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running clang-format on source files")
+    add_custom_target(
+      format
+      COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${ALL_SOURCE_FILES}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "Running clang-format on source files")
+  endif()
 endif()
 
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
-if(CLANG_TIDY_EXE)
-  message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
-  set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_EXE};-checks=*,-clang-analyzer-alpha.*")
+if(TARGET lint OR CMAKE_BUILD_TYPE STREQUAL "Lint")
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+  if(CLANG_TIDY_EXE)
+    message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
+    set(CMAKE_C_CLANG_TIDY
+        "${CLANG_TIDY_EXE};-checks=*,-clang-analyzer-alpha.*")
 
-  add_custom_target(
-    lint
-    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} ${ALL_SOURCE_FILES}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running clang-tidy on source files")
+    file(GLOB_RECURSE ALL_SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/*.c
+         ${CMAKE_SOURCE_DIR}/tests/*.c)
+
+    add_custom_target(
+      lint
+      COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} ${ALL_SOURCE_FILES}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "Running clang-tidy on source files")
+  endif()
 endif()
 
 file(GLOB_RECURSE WAMPPROTO_SOURCES src/*.c)
 
 add_library(wampproto STATIC ${WAMPPROTO_SOURCES})
 
-set(TINYCBOR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/install")
+include(FetchContent)
 
-add_library(TinyCBOR::TinyCBOR STATIC IMPORTED)
+FetchContent_Declare(
+  tinycbor
+  GIT_REPOSITORY https://github.com/intel/tinycbor.git
+  GIT_TAG main)
 
-set_target_properties(
-  TinyCBOR::TinyCBOR
-  PROPERTIES IMPORTED_LOCATION "${TINYCBOR_ROOT}/lib/libtinycbor.a"
-             INTERFACE_INCLUDE_DIRECTORIES "${TINYCBOR_ROOT}/include/")
+FetchContent_MakeAvailable(tinycbor)
+target_link_libraries(wampproto PRIVATE tinycbor)
+target_include_directories(wampproto PRIVATE ${tinycbor_SOURCE_DIR}/src)
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.cache/fetchcontent")
+
+# set(TINYCBOR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/deps/tinycbor/install")
+
+# add_library(TinyCBOR::TinyCBOR STATIC IMPORTED)
+
+# set_target_properties( TinyCBOR::TinyCBOR PROPERTIES IMPORTED_LOCATION
+# "${TINYCBOR_ROOT}/lib/libtinycbor.a" INTERFACE_INCLUDE_DIRECTORIES
+# "${TINYCBOR_ROOT}/include/")
 
 find_library(MSGPACK_LIB NAMES msgpackc msgpack-c)
 if(NOT MSGPACK_LIB)
@@ -81,8 +100,8 @@ else()
   endif()
 endif()
 
-target_link_libraries(wampproto PRIVATE TinyCBOR::TinyCBOR cjson ${MSGPACK_LIB}
-                                        ${SODIUM_LIBRARY} m)
+target_link_libraries(wampproto PRIVATE cjson ${MSGPACK_LIB} ${SODIUM_LIBRARY}
+                                        m)
 
 # Public include dir (installed, exported)
 target_include_directories(
@@ -90,8 +109,8 @@ target_include_directories(
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
   PRIVATE ${SODIUM_INCLUDE_DIR})
 # Test runner / entrypoint
-option(BUILD_TESTS "Build test runner" ON)
-if(BUILD_TESTS)
+option(WAMMPROTO_BUILD_TESTS "Build WAMPProto tests" OFF)
+if(WAMMPROTO_BUILD_TESTS)
   enable_testing()
 
   add_executable(test_serializers tests/test_serializers.c)

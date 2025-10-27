@@ -16,18 +16,22 @@ setup:
 	cp deps/tinycbor/src/*.h deps/tinycbor/install/include/tinycbor/
 
 build:
-	cmake -S . -B $(CMAKE_DIR) -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake -S . -B $(CMAKE_DIR) -DWAMMPROTO_BUILD_TESTS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 	cmake --build $(CMAKE_DIR) -j$(NPROC)
 
-format: build
-	cmake --build $(CMAKE_DIR) --target format
+format:
+	cmake -S . -B $(CMAKE_DIR)at -DCMAKE_BUILD_TYPE=Format -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake --build $(CMAKE_DIR)at --target format
 	cmake-format -i CMakeLists.txt
 
-lint: build
+lint:
+	cmake -S . -B $(CMAKE_DIR) -DCMAKE_BUILD_TYPE=Lint -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 	cmake --build $(CMAKE_DIR) --target lint
 	cmake-lint CMakeLists.txt
 
-test: build
+test:
+	cmake -S . -B $(CMAKE_DIR) -DWAMMPROTO_BUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake --build $(CMAKE_DIR) -j$(NPROC)
 	ctest --test-dir $(CMAKE_DIR) --output-on-failure -V
 
 clean:
