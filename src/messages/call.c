@@ -32,7 +32,7 @@ static List* call_marshal(const Message* self) {
 
 static void call_free(Message* self) { free(self); }
 
-Call* call_new(const int64_t request_id, Dict* options, char* procedure, List* args, Dict* kwargs) {
+Call* call_new(const int64_t request_id, Dict* options, const char* procedure, List* args, Dict* kwargs) {
     Call* r = calloc(1, sizeof(Call));
     r->base.message_type = MESSAGE_TYPE_CALL;
     r->base.marshal = call_marshal;

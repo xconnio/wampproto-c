@@ -21,7 +21,7 @@ static void goodbye_free(Message* self) {
     free(self);
 }
 
-Goodbye* goodbye_new(Dict* details, char* uri) {
+Goodbye* goodbye_new(Dict* details, const char* uri) {
     Goodbye* goodbye = calloc(1, sizeof(*goodbye));
     goodbye->base.message_type = MESSAGE_TYPE_GOODBYE;
     goodbye->base.marshal = goodbye_marshal;

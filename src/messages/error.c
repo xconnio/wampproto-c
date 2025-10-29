@@ -30,7 +30,7 @@ static List* error_marshal(const Message* self) {
 
 static void error_free(Message* self) { free(self); }
 
-Error* error_new(int64_t message_type, int64_t request_id, Dict* details, char* uri, List* args, Dict* kwargs) {
+Error* error_new(int64_t message_type, int64_t request_id, Dict* details, const char* uri, List* args, Dict* kwargs) {
     Error* error = calloc(1, sizeof(*error));
     error->base.message_type = MESSAGE_TYPE_ERROR;
     error->base.marshal = error_marshal;
