@@ -7,11 +7,11 @@
 typedef struct {
     Message base;
     Dict* details;
-    char* uri;
+    const char* uri;
 
 } Goodbye;
 
-Goodbye* goodbye_new(Dict* details, char* uri);
+Goodbye* goodbye_new(Dict* details, const char* uri);
 
 Message* goodbye_parse(const List* val);
 

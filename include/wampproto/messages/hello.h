@@ -8,16 +8,16 @@
 
 typedef struct {
     Message base;
-    char* realm;
+    const char* realm;
     Dict* details;
-    char* authid;
+    const char* authid;
     Dict* roles;
     List* authmethods;
     Dict* auth_extra;
 
 } Hello;
 
-Hello* hello_new(char* realm, char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods);
+Hello* hello_new(const char* realm, const char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods);
 
 Message* hello_parse(const List* val);
 
