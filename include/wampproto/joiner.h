@@ -11,7 +11,7 @@ typedef enum { STATE_NONE, STATE_HELLO_SENT, STATE_AUTHENTICATE_SENT, STATE_JOIN
 typedef struct Joiner Joiner;
 
 typedef struct Joiner {
-    char *realm;
+    const char *realm;
     Serializer *serializer;
     ClientAuthenticator *authenticator;
     SessionDetails *session_details;
@@ -20,6 +20,6 @@ typedef struct Joiner {
     State state;
 } Joiner;
 
-Joiner *joiner_new(char *realm, Serializer *serializer, ClientAuthenticator *authenticator);
+Joiner *joiner_new(const char *realm, Serializer *serializer, ClientAuthenticator *authenticator);
 
 #endif

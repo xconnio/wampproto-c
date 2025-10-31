@@ -98,7 +98,7 @@ static Bytes receive(Joiner *self, Bytes bytes) {
     return empty_bytes_value->bytes_val;
 }
 
-Joiner *joiner_new(char *realm, Serializer *serializer, ClientAuthenticator *authenticator) {
+Joiner *joiner_new(const char *realm, Serializer *serializer, ClientAuthenticator *authenticator) {
     Joiner *joiner = calloc(1, sizeof(*joiner));
     joiner->realm = realm;
     joiner->serializer = serializer;
