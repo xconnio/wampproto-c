@@ -10,10 +10,12 @@ setup:
 	mkdir -p deps
 	git clone https://github.com/intel/tinycbor.git ./deps/tinycbor -b v0.6.1
 	$(MAKE) -C deps/tinycbor -j$$(nproc)
-	mkdir -p deps/tinycbor/install/lib
-	mkdir -p deps/tinycbor/install/include/tinycbor
-	cp deps/tinycbor/lib/libtinycbor.a deps/tinycbor/install/lib/
-	cp deps/tinycbor/src/*.h deps/tinycbor/install/include/tinycbor/
+	sudo $(MAKE) -C deps/tinycbor install
+	rm -rf deps
+
+install:
+	sudo cmake --install $(CMAKE_DIR)
+
 
 build:
 	cmake -S . -B $(CMAKE_DIR) -DWAMMPROTO_BUILD_TESTS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
