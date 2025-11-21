@@ -10,11 +10,11 @@ typedef struct {
     Message base;
     int64_t request_id;
     Dict* options;
-    char* uri;
+    const char* uri;
 
 } Register;
 
-Register* register_new(int64_t request_id, Dict* options, char* uri);
+Register* register_new(int64_t request_id, Dict* options, const char* uri);
 
 Message* register_parse(const List* list);
 

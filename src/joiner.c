@@ -5,6 +5,7 @@
 
 #include "wampproto/authenticators/authenticator.h"
 #include "wampproto/dict.h"
+#include "wampproto/messages/abort.h"
 #include "wampproto/messages/authenticate.h"
 #include "wampproto/messages/challenge.h"
 #include "wampproto/messages/hello.h"
@@ -46,8 +47,8 @@ static Bytes send_hello(Joiner *self) {
     value_list_append(value_auth_methods, value_str(authenticator->auth_method));
     List *auth_methods = value_as_list(value_auth_methods);
 
-    Hello *hello = hello_new(joiner->realm, (char *)authenticator->auth_id, authenticator->auth_extra, client_roles(),
-                             auth_methods);
+    Hello *hello = hello_new(joiner->realm, (char *)authenticator->auth_id, dict_clone(authenticator->auth_extra),
+                             client_roles(), auth_methods);
 
     joiner->state = STATE_HELLO_SENT;
 
@@ -77,8 +78,11 @@ static Message *receive_message(Joiner *self, Message *msg) {
         Authenticate *authenticate = authenticator->authenticate(authenticator, (Challenge *)msg);
 
         joiner->state = STATE_AUTHENTICATE_SENT;
-        return (Message *)authenticate;
 
+        return (Message *)authenticate;
+    } else if (msg->message_type == MESSAGE_TYPE_ABORT) {
+        printf("\nABORT RECEIVED...\n");
+        return msg;
     } else {
         return NULL;
     }
@@ -98,7 +102,7 @@ static Bytes receive(Joiner *self, Bytes bytes) {
     return empty_bytes_value->bytes_val;
 }
 
-Joiner *joiner_new(char *realm, Serializer *serializer, ClientAuthenticator *authenticator) {
+Joiner *joiner_new(const char *realm, Serializer *serializer, ClientAuthenticator *authenticator) {
     Joiner *joiner = calloc(1, sizeof(*joiner));
     joiner->realm = realm;
     joiner->serializer = serializer;
