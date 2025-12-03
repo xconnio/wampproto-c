@@ -3,3 +3,5 @@
 include("${CMAKE_CURRENT_LIST_DIR}/wampprotoTargets.cmake")
 
 set(WAMPPROTO_INCLUDE_DIR "@PACKAGE_INSTALL_INCLUDEDIR@/wampproto")
+
+check_required_components(wampproto)

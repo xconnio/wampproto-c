@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.20)
 project(wampproto C)
+option(WAMPPROTO_BUILD_TESTS "Build WAMPProto tests" OFF)
 
 # -------------------------
 # Project Settings
@@ -10,8 +11,7 @@ include(GNUInstallDirs)
 # -------------------------
 # Formatting & Linting
 # -------------------------
-
-# Clang-format
+# (unchanged)
 if(TARGET format OR CMAKE_BUILD_TYPE STREQUAL "Format")
   find_program(CLANG_FORMAT_EXE NAMES clang-format)
   if(CLANG_FORMAT_EXE)
@@ -29,7 +29,6 @@ if(TARGET format OR CMAKE_BUILD_TYPE STREQUAL "Format")
   endif()
 endif()
 
-# Clang-tidy
 if(TARGET lint OR CMAKE_BUILD_TYPE STREQUAL "Lint")
   find_program(CLANG_TIDY_EXE NAMES clang-tidy)
   if(CLANG_TIDY_EXE)
@@ -53,99 +52,102 @@ endif()
 # Sources & Library
 # -------------------------
 file(GLOB_RECURSE WAMPPROTO_SOURCES src/*.c)
-add_library(wampproto SHARED ${WAMPPROTO_SOURCES})
+add_library(wampproto STATIC ${WAMPPROTO_SOURCES})
 set_target_properties(wampproto PROPERTIES VERSION "0.1.0" SOVERSION "0")
 
 # -------------------------
 # Dependencies
 # -------------------------
 
+# Fix include directories using BUILD_INTERFACE / INSTALL_INTERFACE
+target_include_directories(
+  wampproto
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/uthash/src>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/cJSON>
+         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/wampproto>)
+
+# --- Vendored MbedTLS ---
+set(ENABLE_PROGRAMS
+    OFF
+    CACHE BOOL "" FORCE)
+set(ENABLE_TESTING
+    OFF
+    CACHE BOOL "" FORCE)
+set(UNSAFE_BUILD
+    OFF
+    CACHE BOOL "" FORCE)
+add_subdirectory(external/mbedtls)
+add_definitions(-DHAVE_MBEDTLS)
+
+# Vendored libsodium
+set(SODIUM_DISABLE_TESTS
+    ON
+    CACHE BOOL "" FORCE)
+set(SODIUM_BUILD_SHARED
+    OFF
+    CACHE BOOL "" FORCE)
+add_subdirectory(external/libsodium)
+set(SODIUM_SOURCE_INCLUDE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/external/libsodium/libsodium/src/libsodium/include"
+)
+set(SODIUM_BINARY_INCLUDE_DIR
+    "${CMAKE_CURRENT_BINARY_DIR}/external/libsodium/libsodium/src/libsodium/include"
+)
+set_target_properties(
+  sodium
+  PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+    "$<BUILD_INTERFACE:${SODIUM_SOURCE_INCLUDE_DIR}>;$<BUILD_INTERFACE:${SODIUM_BINARY_INCLUDE_DIR}>;$<INSTALL_INTERFACE:include>"
+)
+
 # Msgpack
-find_library(MSGPACK_LIB NAMES msgpackc msgpack-c)
-if(NOT MSGPACK_LIB)
-  message(
-    FATAL_ERROR "Could not find msgpack library (tried msgpackc and msgpack-c)")
-else()
-  message(STATUS "Found msgpack library: ${MSGPACK_LIB}")
-endif()
-
-# Sodium
-find_library(SODIUM_LIBRARY sodium)
-find_path(SODIUM_INCLUDE_DIR sodium.h)
-
-# uthash (optional)
-find_library(UTHASH_LIB NAMES uthash)
+set(MSGPACK_BUILD_TESTS
+    OFF
+    CACHE BOOL "Build msgpack tests" FORCE)
+set(MSGPACK_BUILD_EXAMPLES
+    OFF
+    CACHE BOOL "Build msgpack examples" FORCE)
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(external/msgpack-c)
 
 # TinyCBOR
-find_path(
-  TINYCBOR_INCLUDE_DIR
-  NAMES cbor.h
-  PATH_SUFFIXES tinycbor)
-find_library(TINYCBOR_LIBRARIES NAMES tinycbor)
+add_subdirectory(external/tinycbor EXCLUDE_FROM_ALL)
 
-if(NOT TINYCBOR_INCLUDE_DIR OR NOT TINYCBOR_LIBRARIES)
-  message(
-    FATAL_ERROR
-      "TinyCBOR not found. Set TINYCBOR_INCLUDE_DIR / TINYCBOR_LIBRARIES")
-else()
-  message(
-    STATUS "Found TinyCBOR: ${TINYCBOR_LIBRARIES} -- ${TINYCBOR_INCLUDE_DIR}")
-endif()
-
-# MbedTLS (optional)
-find_package(MbedTLS QUIET)
-if(MbedTLS_FOUND)
-  set(MBEDTLS_INCLUDE_DIRS ${MbedTLS_INCLUDE_DIRS})
-  set(MBEDTLS_LIBS mbedtls mbedcrypto)
-  add_definitions(-DHAVE_MBEDTLS)
-else()
-  # Fallback search
-  find_path(MBEDTLS_INCLUDE_DIR mbedtls/version.h)
-  find_library(MBEDTLS_LIBRARY mbedtls)
-  find_library(MBEDCRYPTO_LIBRARY mbedcrypto)
-  if(MBEDTLS_INCLUDE_DIR
-     AND MBEDTLS_LIBRARY
-     AND MBEDCRYPTO_LIBRARY)
-    set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_INCLUDE_DIR})
-    set(MBEDTLS_LIBS ${MBEDTLS_LIBRARY} ${MBEDCRYPTO_LIBRARY})
-    add_definitions(-DHAVE_MBEDTLS)
-  else()
-    message(WARNING "MbedTLS not found; WAMPCRA salted won't be supported.")
-    set(MBEDTLS_INCLUDE_DIRS "")
-    set(MBEDTLS_LIBS "")
-  endif()
-endif()
+# cJSON
+target_sources(wampproto PRIVATE external/cJSON/cJSON.c)
 
 # -------------------------
 # Target Configuration
 # -------------------------
-target_include_directories(
-  wampproto
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/wampproto>
-  PUBLIC ${SODIUM_INCLUDE_DIR} ${TINYCBOR_INCLUDE_DIR} ${MBEDTLS_INCLUDE_DIRS})
-
 target_link_libraries(
-  wampproto PUBLIC cjson ${TINYCBOR_LIBRARIES} ${MSGPACK_LIB} ${SODIUM_LIBRARY}
-                   ${MBEDTLS_LIBS} m)
+  wampproto
+  PUBLIC tinycbor
+         sodium
+         mbedtls # Changed from MbedTLS::mbedtls
+         mbedx509 # Changed from MbedTLS::mbedx509
+         mbedcrypto # Changed from MbedTLS::mbedcrypto
+         msgpack-c
+         m)
 
 # -------------------------
 # Installation
 # -------------------------
-install(
-  TARGETS wampproto
-  EXPORT wampprotoTargets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# install( TARGETS wampproto EXPORT wampprotoTargets ARCHIVE DESTINATION
+# ${CMAKE_INSTALL_LIBDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} INCLUDES
+# DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION
+# ${CMAKE_INSTALL_INCLUDEDIR})
+
+# # Export targets file install( EXPORT wampprotoTargets FILE
+# wampprotoTargets.cmake NAMESPACE wampproto:: DESTINATION
+# ${CMAKE_INSTALL_LIBDIR}/cmake/wampproto)
 
 # -------------------------
-# Tests
+# Tests (disabled by default)
 # -------------------------
-option(WAMMPROTO_BUILD_TESTS "Build WAMPProto tests" OFF)
-if(WAMMPROTO_BUILD_TESTS)
+if(WAMPPROTO_BUILD_TESTS)
   enable_testing()
 
   add_executable(test_serializers tests/test_serializers.c)
@@ -168,21 +170,47 @@ if(WAMMPROTO_BUILD_TESTS)
   target_link_libraries(test_wampproto_session PRIVATE wampproto)
   add_test(NAME test_wampproto_session COMMAND test_wampproto_session)
 endif()
-
 # -------------------------
-# CMake Package Config
+# Installation
 # -------------------------
+include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+# 1. Install wampproto AND its dependencies We add sodium, mbedtls, etc. here so
+#   they get included in "wampprotoTargets"
+install(
+  TARGETS wampproto
+          sodium
+          mbedtls # <--- The real target name
+          mbedx509 # <--- The real target name
+          mbedcrypto # <--- The real target name
+          everest
+          p256m
+          msgpack-c
+          tinycbor
+  EXPORT wampprotoTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# 1. Install Headers (Unchanged)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# 1. Export the targets file (Unchanged) Now this file will contain definitions
+#   for wampproto::wampproto, wampproto::sodium, wampproto::mbedtls, etc.
+install(
+  EXPORT wampprotoTargets
+  FILE wampprotoTargets.cmake
+  NAMESPACE wampproto::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wampproto)
+
+# 1. Config and Version files (Unchanged)
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/wampprotoConfigVersion.cmake"
   VERSION 0.1.0
   COMPATIBILITY SameMajorVersion)
-
-install(
-  EXPORT wampprotoTargets
-  FILE wampprotoTargets.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wampproto)
 
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/wampprotoConfig.cmake.in"
