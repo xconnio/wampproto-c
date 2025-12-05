@@ -22,7 +22,7 @@ static void register_free(Message* self) {
     free(r);
 }
 
-Register* register_new(int64_t request_id, Dict* options, char* uri) {
+Register* register_new(int64_t request_id, Dict* options, const char* uri) {
     Register* r = calloc(1, sizeof(*r));
 
     r->base.message_type = MESSAGE_TYPE_REGISTER;

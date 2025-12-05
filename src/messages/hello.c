@@ -45,7 +45,7 @@ Dict* create_hello_details(Hello* self) {
     return details;
 }
 
-Hello* hello_new(char* realm, char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods) {
+Hello* hello_new(const char* realm, const char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods) {
     Hello* hello = calloc(1, sizeof(*hello));
     hello->base.message_type = MESSAGE_TYPE_HELLO;
     hello->base.marshal = hello_marshal;

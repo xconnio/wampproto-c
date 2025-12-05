@@ -6,6 +6,8 @@
 
 #include "wampproto/dict.h"
 
+#include "uthash.h"
+
 static Value* value_alloc(ValueType type) {
     Value* v = calloc(1, sizeof(Value));
     v->type = type;
@@ -93,6 +95,13 @@ Value* value_bytes(const uint8_t* data, size_t len) {
         v->bytes_val.len = 0;
     }
     return v;
+}
+
+void dict_foreach(const Dict* dict, dict_iter_cb cb, void* item) {
+    if (!dict || !cb) return;
+
+    Entry *curr, *tmp;
+    HASH_ITER(hh, dict->table, curr, tmp) { cb(curr->key, curr->value, item); }
 }
 
 int value_list_set(Value* list, size_t idx, Value* val) {

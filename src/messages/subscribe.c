@@ -24,7 +24,7 @@ static void subscribe_free(Message *self) {
     free(subscribe);
 }
 
-Subscribe *subscribe_new(int64_t request_id, Dict *options, char *uri) {
+Subscribe *subscribe_new(int64_t request_id, Dict *options, const char *uri) {
     Subscribe *subscribe = calloc(1, sizeof(*subscribe));
 
     subscribe->base.message_type = MESSAGE_TYPE_SUBSCRIBE;

@@ -10,12 +10,12 @@ typedef struct {
     Message base;
     int64_t request_id;
     Dict* options;
-    char* procedure;
+    const char* procedure;
     List* args;
     Dict* kwargs;
 } Call;
 
-Call* call_new(int64_t request_id, Dict* options, char* procedure, List* args, Dict* kwargs);
+Call* call_new(int64_t request_id, Dict* options, const char* procedure, List* args, Dict* kwargs);
 
 Message* call_parse(const List* val);
 

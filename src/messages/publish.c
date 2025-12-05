@@ -41,7 +41,7 @@ static void publish_free(Message* self) {
     free(publish);
 }
 
-Publish* publish_new(int64_t request_id, Dict* options, char* uri, List* args, Dict* kwargs) {
+Publish* publish_new(int64_t request_id, Dict* options, const char* uri, List* args, Dict* kwargs) {
     Publish* publish = calloc(1, sizeof(*publish));
 
     publish->base.message_type = MESSAGE_TYPE_PUBLISH;

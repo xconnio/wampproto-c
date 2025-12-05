@@ -1,0 +1,20 @@
+[submodule "external/mbedtls"]
+	path = external/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
+  shallow = true
+[submodule "external/libsodium"]
+	path = external/libsodium
+	url = https://github.com/robinlinden/libsodium-cmake.git
+[submodule "external/msgpack-c"]
+	path = external/msgpack-c
+	url = https://github.com/msgpack/msgpack-c.git
+	branch = c_master
+[submodule "external/uthash"]
+	path = external/uthash
+	url = https://github.com/troydhanson/uthash.git
+[submodule "external/tinycbor"]
+	path = external/tinycbor
+	url = https://github.com/intel/tinycbor.git
+[submodule "external/cJSON"]
+	path = external/cJSON
+	url = https://github.com/DaveGamble/cJSON.git
