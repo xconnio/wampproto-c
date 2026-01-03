@@ -6,10 +6,10 @@
 
 #define MAX_ID ((int64_t)1 << 53)
 
-static IDGenerator *global_id_generator = NULL;
+static IDGenerator* global_id_generator = NULL;
 
 static int64_t next(void) {
-    IDGenerator *self = global_id_generator;
+    IDGenerator* self = global_id_generator;
     mutex_lock(self->mutex);
 
     if (MAX_ID == self->id) {
@@ -23,8 +23,8 @@ static int64_t next(void) {
     return self->id;
 }
 
-IDGenerator *id_generator_new(void) {
-    IDGenerator *id_generator = calloc(1, sizeof(*id_generator));
+IDGenerator* id_generator_new(void) {
+    IDGenerator* id_generator = calloc(1, sizeof(*id_generator));
     id_generator->id = 0;
     id_generator->mutex = mutex_create();
     global_id_generator = id_generator;

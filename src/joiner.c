@@ -15,20 +15,20 @@
 #include "wampproto/session_details.h"
 #include "wampproto/value.h"
 
-static Dict *client_roles(void) {
-    Value *caller_features = value_dict();
+static Dict* client_roles(void) {
+    Value* caller_features = value_dict();
     value_dict_set(caller_features, "features", value_dict());
 
-    Value *callee_features = value_dict();
+    Value* callee_features = value_dict();
     value_dict_set(callee_features, "features", value_dict());
 
-    Value *publisher_features = value_dict();
+    Value* publisher_features = value_dict();
     value_dict_set(publisher_features, "features", value_dict());
 
-    Value *subscriber_features = value_dict();
+    Value* subscriber_features = value_dict();
     value_dict_set(subscriber_features, "features", value_dict());
 
-    Value *roles = value_dict();
+    Value* roles = value_dict();
     value_dict_set(roles, "caller", caller_features);
     value_dict_set(roles, "callee", callee_features);
     value_dict_set(roles, "publisher", publisher_features);
@@ -37,32 +37,32 @@ static Dict *client_roles(void) {
     return value_as_dict(roles);
 }
 
-static Bytes send_hello(Joiner *self) {
-    Joiner *joiner = self;
-    ClientAuthenticator *authenticator = joiner->authenticator;
-    Serializer *serializer = joiner->serializer;
-    Dict *roles = create_dict();
+static Bytes send_hello(Joiner* self) {
+    Joiner* joiner = self;
+    ClientAuthenticator* authenticator = joiner->authenticator;
+    Serializer* serializer = joiner->serializer;
+    Dict* roles = create_dict();
 
-    Value *value_auth_methods = value_list(1);
+    Value* value_auth_methods = value_list(1);
     value_list_append(value_auth_methods, value_str(authenticator->auth_method));
-    List *auth_methods = value_as_list(value_auth_methods);
+    List* auth_methods = value_as_list(value_auth_methods);
 
-    Hello *hello = hello_new(joiner->realm, (char *)authenticator->auth_id, dict_clone(authenticator->auth_extra),
+    Hello* hello = hello_new(joiner->realm, (char*)authenticator->auth_id, dict_clone(authenticator->auth_extra),
                              client_roles(), auth_methods);
 
     joiner->state = STATE_HELLO_SENT;
 
-    return serializer->serialize(serializer, (Message *)hello);
+    return serializer->serialize(serializer, (Message*)hello);
 }
 
-static Message *receive_message(Joiner *self, Message *msg) {
-    Joiner *joiner = self;
+static Message* receive_message(Joiner* self, Message* msg) {
+    Joiner* joiner = self;
     if (msg->message_type == MESSAGE_TYPE_WELCOME) {
         if (joiner->state != STATE_HELLO_SENT && joiner->state != STATE_AUTHENTICATE_SENT) {
             return NULL;
         }
 
-        Welcome *welcome = (Welcome *)msg;
+        Welcome* welcome = (Welcome*)msg;
 
         joiner->session_details =
             session_details_new(welcome->session_id, joiner->realm, welcome->authid, welcome->authrole);
@@ -74,12 +74,12 @@ static Message *receive_message(Joiner *self, Message *msg) {
             return NULL;
         }
 
-        ClientAuthenticator *authenticator = joiner->authenticator;
-        Authenticate *authenticate = authenticator->authenticate(authenticator, (Challenge *)msg);
+        ClientAuthenticator* authenticator = joiner->authenticator;
+        Authenticate* authenticate = authenticator->authenticate(authenticator, (Challenge*)msg);
 
         joiner->state = STATE_AUTHENTICATE_SENT;
 
-        return (Message *)authenticate;
+        return (Message*)authenticate;
     } else if (msg->message_type == MESSAGE_TYPE_ABORT) {
         printf("\nABORT RECEIVED...\n");
         return msg;
@@ -88,22 +88,22 @@ static Message *receive_message(Joiner *self, Message *msg) {
     }
 }
 
-static Bytes receive(Joiner *self, Bytes bytes) {
-    Joiner *joiner = self;
-    Serializer *serializer = joiner->serializer;
+static Bytes receive(Joiner* self, Bytes bytes) {
+    Joiner* joiner = self;
+    Serializer* serializer = joiner->serializer;
 
-    Message *msg = serializer->deserialize(serializer, bytes);
-    Message *received_message = receive_message(self, msg);
+    Message* msg = serializer->deserialize(serializer, bytes);
+    Message* received_message = receive_message(self, msg);
 
     if (received_message && received_message->message_type == MESSAGE_TYPE_AUTHENTICATE)
         return serializer->serialize(serializer, received_message);
 
-    Value *empty_bytes_value = value_bytes(NULL, 0);
+    Value* empty_bytes_value = value_bytes(NULL, 0);
     return empty_bytes_value->bytes_val;
 }
 
-Joiner *joiner_new(const char *realm, Serializer *serializer, ClientAuthenticator *authenticator) {
-    Joiner *joiner = calloc(1, sizeof(*joiner));
+Joiner* joiner_new(const char* realm, Serializer* serializer, ClientAuthenticator* authenticator) {
+    Joiner* joiner = calloc(1, sizeof(*joiner));
     joiner->realm = realm;
     joiner->serializer = serializer;
     joiner->authenticator = authenticator;
