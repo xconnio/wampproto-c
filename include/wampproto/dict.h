@@ -9,5 +9,6 @@ void dict_insert(Dict* dict, const char* key, Value* value);
 Value* dict_get(Dict* dict, const char* key);
 void dict_remove(Dict* dict, const char* key);
 void dict_free(Dict* dict);
+Dict* dict_clone(const Dict* src);
 
 #endif  // WAMPPROTO_DICT_H

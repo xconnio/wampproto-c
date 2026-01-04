@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-test-lint:
@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install dependencies
         run: make setup
@@ -30,4 +32,3 @@ jobs:
         run: |
           make format
           git diff --exit-code || (echo "Code not formatted, run make format locally" && exit 1)
-

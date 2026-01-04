@@ -54,6 +54,9 @@ typedef struct Value {
     };
 } Value;
 
+typedef void (*dict_iter_cb)(const char* key, Value* val, void* item);
+void dict_foreach(const Dict* dict, dict_iter_cb cb, void* item);
+
 Value* value_null(void);
 Value* value_int(int64_t n);
 Value* value_float(double n);
@@ -63,6 +66,7 @@ Value* value_list(size_t len);
 Value* value_dict(void);
 Value* value_bytes(const uint8_t* data, size_t len);
 
+List* create_list(const size_t length);
 int64_t value_as_int(const Value* v);
 char* value_as_str(const Value* v);
 Dict* value_as_dict(const Value* v);
@@ -82,6 +86,8 @@ char* str_from_dict(Dict* dict, const char* key);
 double float_from_dict(Dict* dict, const char* key);
 List* list_from_dict(Dict* dict, const char* key);
 Dict* dict_from_dict(Dict* dict, const char* key);
+
+Value* value_clone(const Value* src);
 
 #define VALUE_FROM_INT(n) value_int((n))
 #define VALUE_FROM_FLOAT(x) value_float((x))

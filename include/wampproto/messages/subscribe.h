@@ -9,11 +9,11 @@ typedef struct {
 
     int64_t request_id;
     Dict *options;
-    char *uri;
+    const char *uri;
 
 } Subscribe;
 
-Subscribe *subscribe_new(int64_t request_id, Dict *options, char *uri);
+Subscribe *subscribe_new(int64_t request_id, Dict *options, const char *uri);
 
 Message *subscribe_parse(const List *val);
 

@@ -1,0 +1,19 @@
+[submodule "vendor/msgpack-c"]
+	path = vendor/msgpack-c
+	url = https://github.com/msgpack/msgpack-c.git
+	branch = c_master
+[submodule "vendor/libsodium"]
+	path = vendor/libsodium
+	url = https://github.com/robinlinden/libsodium-cmake.git
+[submodule "vendor/tinycbor"]
+	path = vendor/tinycbor
+	url = https://github.com/intel/tinycbor.git
+[submodule "vendor/uthash"]
+	path = vendor/uthash
+	url = https://github.com/troydhanson/uthash.git
+[submodule "vendor/cJSON"]
+	path = vendor/cJSON
+	url = https://github.com/DaveGamble/cJSON.git
+[submodule "vendor/mbedtls"]
+	path = vendor/mbedtls
+	url = git@github.com:Mbed-TLS/mbedtls.git

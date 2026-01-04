@@ -1,10 +1,13 @@
 #include "wampproto/value.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "wampproto/dict.h"
+
+#include "uthash.h"
 
 static Value* value_alloc(ValueType type) {
     Value* v = calloc(1, sizeof(Value));
@@ -62,6 +65,15 @@ Value* value_list(const size_t len) {
     return v;
 }
 
+List* create_list(const size_t length) {
+    List* list = malloc(sizeof(*list));
+    if (!list) return NULL;
+
+    list->items = calloc(length, sizeof(Value*));
+    list->len = 0;
+    return list;
+}
+
 Value* create_value_from_list(List* list) {
     Value* v = value_alloc(VALUE_LIST);
     v->list_val = list;
@@ -93,6 +105,13 @@ Value* value_bytes(const uint8_t* data, size_t len) {
         v->bytes_val.len = 0;
     }
     return v;
+}
+
+void dict_foreach(const Dict* dict, dict_iter_cb cb, void* item) {
+    if (!dict || !cb) return;
+
+    Entry *curr, *tmp;
+    HASH_ITER(hh, dict->table, curr, tmp) { cb(curr->key, curr->value, item); }
 }
 
 int value_list_set(Value* list, size_t idx, Value* val) {

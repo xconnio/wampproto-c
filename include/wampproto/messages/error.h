@@ -10,13 +10,13 @@ typedef struct {
     int64_t message_type;
     int64_t request_id;
     Dict* details;
-    char* uri;
+    const char* uri;
     List* args;
     Dict* kwargs;
 
 } Error;
 
-Error* error_new(int64_t message_type, int64_t request_id, Dict* details, char* uri, List* args, Dict* kwargs);
+Error* error_new(int64_t message_type, int64_t request_id, Dict* details, const char* uri, List* args, Dict* kwargs);
 
 Message* error_parse(const List* val);
 

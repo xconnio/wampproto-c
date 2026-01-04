@@ -7,11 +7,11 @@ IncludeBlocks: Regroup
 
 IncludeCategories:
   # 1. C system headers (e.g., <stdlib.h>, <stdio.h>)
-  - Regex: '^<[^/]*>$'
+  - Regex: "^<[^/]*>$"
     Priority: 1
 
   # 2. Third-party library headers (e.g., <curl/curl.h>, <gtest/gtest.h>)
-  - Regex: '^<.*/.*>$'
+  - Regex: "^<.*/.*>$"
     Priority: 2
 
   # 3. Local project headers — "wampproto/..." (your own library)

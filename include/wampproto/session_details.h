@@ -5,12 +5,12 @@
 
 typedef struct {
     int64_t session_id;
-    char *realm;
-    char *auth_id;
-    char *auth_role;
+    const char *realm;
+    const char *auth_id;
+    const char *auth_role;
 
 } SessionDetails;
 
-SessionDetails *session_details_new(int64_t session_id, char *realm, char *auth_id, char *auth_role);
+SessionDetails *session_details_new(int64_t session_id, const char *realm, const char *auth_id, const char *auth_role);
 
 #endif

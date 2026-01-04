@@ -3,6 +3,6 @@
 
 #include "wampproto/authenticators/authenticator.h"
 
-ClientAuthenticator* wampcra_authenticator_new(char* auth_id, char* secret, Dict* auth_extra);
+ClientAuthenticator* wampcra_authenticator_new(const char* auth_id, const char* secret, Dict* auth_extra);
 
 #endif

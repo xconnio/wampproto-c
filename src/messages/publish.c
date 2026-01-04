@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static List* publish_marshal(const Message* self) {
@@ -41,7 +42,7 @@ static void publish_free(Message* self) {
     free(publish);
 }
 
-Publish* publish_new(int64_t request_id, Dict* options, char* uri, List* args, Dict* kwargs) {
+Publish* publish_new(int64_t request_id, Dict* options, const char* uri, List* args, Dict* kwargs) {
     Publish* publish = calloc(1, sizeof(*publish));
 
     publish->base.message_type = MESSAGE_TYPE_PUBLISH;
@@ -65,11 +66,8 @@ Message* publish_parse(const List* val) {
     Dict* options = value_as_dict(val->items[2]);
     char* uri = value_as_str(val->items[3]);
 
-    List* args = NULL;
-    if (val->len >= 5) args = value_as_list(val->items[4]);
-
-    Dict* kwargs = NULL;
-    if (val->len == 6) kwargs = value_as_dict(val->items[5]);
+    List* args = (val->len >= 5) ? value_as_list(val->items[4]) : create_list(0);
+    Dict* kwargs = (val->len == 6) ? value_as_dict(val->items[5]) : create_dict();
 
     return (Message*)publish_new(request_id, options, uri, args, kwargs);
 }

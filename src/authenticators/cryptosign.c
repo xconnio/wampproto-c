@@ -20,10 +20,11 @@ ClientAuthenticator* cryptosign_authenticator_new(const char* auth_id, const cha
     ClientAuthenticator* auth = calloc(1, sizeof(ClientAuthenticator));
     auth->auth_id = auth_id;
     if (auth_extra == NULL) auth_extra = create_dict();
-    dict_insert(auth_extra, "pubkey", value_str(public_key_from(private_key_hex)));
+    char* public_key = public_key_from(private_key_hex);
+    dict_insert(auth_extra, "pubkey", value_str(public_key));
     auth->auth_extra = auth_extra;
     auth->auth_method = "cryptosign";
-    auth->auth_data = private_key_hex;
+    auth->auth_data = strdup(private_key_hex);
     auth->authenticate = authenticate;
     return auth;
 }
@@ -39,8 +40,9 @@ char* public_key_from(const char* private_key_hex) {
     unsigned char sk[crypto_sign_SECRETKEYBYTES];
     crypto_sign_seed_keypair(pk, sk, seed);
 
-    char* pk_hex = malloc(crypto_sign_PUBLICKEYBYTES * 2 + 1);
-    if (!pk_hex) return NULL;
+    size_t pk_hex_len = crypto_sign_PUBLICKEYBYTES * 2 + 1;
+    char* pk_hex = malloc(pk_hex_len);
+    if (pk_hex == NULL) return NULL;
 
     sodium_bin2hex(pk_hex, crypto_sign_PUBLICKEYBYTES * 2 + 1, pk, sizeof(pk));
 

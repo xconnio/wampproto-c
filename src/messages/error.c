@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
@@ -30,7 +31,7 @@ static List* error_marshal(const Message* self) {
 
 static void error_free(Message* self) { free(self); }
 
-Error* error_new(int64_t message_type, int64_t request_id, Dict* details, char* uri, List* args, Dict* kwargs) {
+Error* error_new(int64_t message_type, int64_t request_id, Dict* details, const char* uri, List* args, Dict* kwargs) {
     Error* error = calloc(1, sizeof(*error));
     error->base.message_type = MESSAGE_TYPE_ERROR;
     error->base.marshal = error_marshal;
@@ -55,15 +56,8 @@ Message* error_parse(const List* val) {
     Dict* details = value_as_dict(val->items[3]);
     char* uri = value_as_str(val->items[4]);
 
-    List* args = NULL;
-    if (val->len == 6) args = value_as_list(val->items[5]);
-
-    Dict* kwargs = NULL;
-    if (val->len == 7) {
-        if (args == NULL) args = value_as_list(val->items[5]);
-
-        kwargs = value_as_dict(val->items[6]);
-    }
+    List* args = (val->len >= 6) ? value_as_list(val->items[5]) : create_list(0);
+    Dict* kwargs = (val->len == 7) ? value_as_dict(val->items[6]) : create_dict();
 
     return (Message*)error_new(message_type, request_id, details, uri, args, kwargs);
 }

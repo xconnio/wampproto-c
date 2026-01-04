@@ -36,8 +36,10 @@ static Dict* default_roles(void) {
 Dict* create_hello_details(Hello* self) {
     Dict* details = create_dict();
     dict_insert(details, "authid", value_str(self->authid));
-    if (self->auth_extra && self->auth_extra->count > 0)
-        dict_insert(details, "authextra", value_from_dict(self->auth_extra));
+
+    Dict* auth_extra = self->auth_extra ? self->auth_extra : create_dict();
+    dict_insert(details, "authextra", value_from_dict(auth_extra));
+
     if (self->roles && self->roles->count > 0) dict_insert(details, "roles", value_from_dict(self->roles));
     if (self->authmethods && self->authmethods->len > 0)
         dict_insert(details, "authmethods", value_from_list(self->authmethods));
@@ -45,7 +47,7 @@ Dict* create_hello_details(Hello* self) {
     return details;
 }
 
-Hello* hello_new(char* realm, char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods) {
+Hello* hello_new(const char* realm, const char* auth_id, Dict* auth_extra, Dict* roles, List* auth_methods) {
     Hello* hello = calloc(1, sizeof(*hello));
     hello->base.message_type = MESSAGE_TYPE_HELLO;
     hello->base.marshal = hello_marshal;

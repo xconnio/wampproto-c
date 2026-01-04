@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/messages/message.h"
 #include "wampproto/value.h"
 
@@ -49,15 +50,9 @@ Message* abort_parse(const List* val) {
 
     Dict* details = value_as_dict(val->items[1]);
     char* reason = value_as_str(val->items[2]);
-    List* args = NULL;
-    if (val->len == 4) args = value_as_list(val->items[3]);
 
-    Dict* kwargs = NULL;
-    if (val->len == 5) {
-        if (args == NULL) args = value_as_list(val->items[3]);
-
-        kwargs = value_as_dict(val->items[4]);
-    }
+    List* args = (val->len >= 4) ? value_as_list(val->items[3]) : create_list(0);
+    Dict* kwargs = (val->len == 5) ? value_as_dict(val->items[4]) : create_dict();
 
     return (Message*)abort_new(details, reason, args, kwargs);
 }

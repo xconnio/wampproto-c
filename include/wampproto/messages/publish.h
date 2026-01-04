@@ -9,12 +9,12 @@ typedef struct {
 
     int64_t request_id;
     Dict* options;
-    char* uri;
+    const char* uri;
     List* args;
     Dict* kwargs;
 } Publish;
 
-Publish* publish_new(int64_t request_id, Dict* options, char* uri, List* args, Dict* kwargs);
+Publish* publish_new(int64_t request_id, Dict* options, const char* uri, List* args, Dict* kwargs);
 
 Message* publish_parse(const List* val);
 
