@@ -1,5 +1,6 @@
 #include "wampproto/value.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,6 +63,15 @@ Value* value_list(const size_t len) {
     v->list_val->items = calloc(len, sizeof(Value*));
     v->list_val->len = 0;
     return v;
+}
+
+List* create_list(const size_t length) {
+    List* list = malloc(sizeof(*list));
+    if (!list) return NULL;
+
+    list->items = calloc(length, sizeof(Value*));
+    list->len = 0;
+    return list;
 }
 
 Value* create_value_from_list(List* list) {

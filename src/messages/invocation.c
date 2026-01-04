@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static List* invocation_marshal(const Message* self) {
@@ -62,15 +63,8 @@ Message* invocation_parse(const List* val) {
     const int64_t registration_id = value_as_int(val->items[2]);
     Dict* details = value_as_dict(val->items[3]);
 
-    List* args = NULL;
-    if (val->len == 5) args = value_as_list(val->items[4]);
-
-    Dict* kwargs = NULL;
-    if (val->len == 6) {
-        if (args == NULL) args = value_as_list(val->items[4]);
-
-        kwargs = value_as_dict(val->items[5]);
-    }
+    List* args = (val->len >= 5) ? value_as_list(val->items[4]) : create_list(0);
+    Dict* kwargs = (val->len == 6) ? value_as_dict(val->items[5]) : create_dict();
 
     return (Message*)invocation_new(request_id, registration_id, details, args, kwargs);
 }

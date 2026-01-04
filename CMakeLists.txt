@@ -141,8 +141,8 @@ target_link_libraries(
 # -------------------------
 # Tests (disabled by default)
 # -------------------------
-option(WAMMPROTO_BUILD_TESTS "Build WAMPProto tests" OFF)
-if(WAMMPROTO_BUILD_TESTS)
+option(WAMPPROTO_BUILD_TESTS "Build WAMPProto tests" OFF)
+if(WAMPPROTO_BUILD_TESTS)
   enable_testing()
 
   add_executable(test_serializers tests/test_serializers.c)

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static List* yield_marshal(const Message* self) {
@@ -58,14 +59,8 @@ Message* yield_parse(const List* val) {
     int64_t request_id = value_as_int(val->items[1]);
     Dict* options = value_as_dict(val->items[2]);
 
-    List* args = NULL;
-    if (val->len == 4) args = value_as_list(val->items[3]);
+    List* args = (val->len >= 4) ? value_as_list(val->items[3]) : create_list(0);
+    Dict* kwargs = (val->len == 5) ? value_as_dict(val->items[4]) : create_dict();
 
-    Dict* kwargs = NULL;
-    if (val->len == 5) {
-        if (args == NULL) args = value_as_list(val->items[3]);
-
-        kwargs = value_as_dict(val->items[4]);
-    }
     return (Message*)yield_new(request_id, options, args, kwargs);
 }

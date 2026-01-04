@@ -66,6 +66,7 @@ Value* value_list(size_t len);
 Value* value_dict(void);
 Value* value_bytes(const uint8_t* data, size_t len);
 
+List* create_list(const size_t length);
 int64_t value_as_int(const Value* v);
 char* value_as_str(const Value* v);
 Dict* value_as_dict(const Value* v);

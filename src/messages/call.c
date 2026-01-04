@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static List* call_marshal(const Message* self) {
@@ -51,20 +52,11 @@ Message* call_parse(const List* val) {
     if (!val || val->len < 4) return NULL;
 
     const int64_t request_id = value_as_int(val->items[1]);
-    Dict* options = val->items[2]->dict_val;
-    char* procedure = val->items[3]->str_val;
+    Dict* options = value_as_dict(val->items[2]);
+    char* procedure = value_as_str(val->items[3]);
 
-    List* args = NULL;
-    if (val->len == 5) args = val->items[4]->list_val;
-
-    Dict* kwargs = NULL;
-    if (val->len == 6) {
-        if (args == NULL) {
-            args = val->items[4]->list_val;
-        }
-
-        kwargs = val->items[5]->dict_val;
-    }
+    List* args = (val->len >= 5) ? value_as_list(val->items[4]) : create_list(0);
+    Dict* kwargs = (val->len == 6) ? value_as_dict(val->items[5]) : create_dict();
 
     return (Message*)call_new(request_id, options, procedure, args, kwargs);
 }

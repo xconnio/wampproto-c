@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "wampproto/dict.h"
 #include "wampproto/value.h"
 
 static List* event_marshal(const Message* self) {
@@ -63,11 +64,8 @@ Message* event_parse(const List* val) {
     int64_t publication_id = value_as_int(val->items[2]);
     Dict* details = value_as_dict(val->items[3]);
 
-    List* args = NULL;
-    if (val->len >= 5) args = value_as_list(val->items[4]);
-
-    Dict* kwargs = NULL;
-    if (val->len == 6) kwargs = value_as_dict(val->items[5]);
+    List* args = (val->len >= 5) ? value_as_list(val->items[4]) : create_list(0);
+    Dict* kwargs = (val->len == 6) ? value_as_dict(val->items[5]) : create_dict();
 
     return (Message*)event_new(subscription_id, publication_id, details, args, kwargs);
 }
